@@ -21,14 +21,14 @@
 
   SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
 -->
-<project name="Test Example" default="build" basedir=".">
+<project name="Panama-Valhalla Experimental Tests" default="build" basedir=".">
 	<taskdef resource='net/sf/antcontrib/antlib.xml'/>
 	<description>
-		Test Example
+		Joint collection of tests for Project Panama and Project Valhalla.
 	</description>
 
 	<!-- set global properties for this build -->
-	<property name="DEST" value="${BUILD_ROOT}/Panama" />
+	<property name="DEST" value="${BUILD_ROOT}/Experimental" />
 	<property name="BUILDINFO_FSROOT" value="${BUILD_ROOT}" />
 
 	<!--Properties for this particular build-->
@@ -43,8 +43,8 @@
 		<mkdir dir="${DEST}" />
 		<mkdir dir="${build}"/>
 		<copy todir="${DEST}">
-			<fileset dir="${TEST_ROOT}/Panama" includes="libpanamatest.so" />
-			<fileset dir="${TEST_ROOT}/TestConfig/lib" includes="panamatest.jar" />
+			<fileset dir="${TEST_ROOT}/Experimental" includes="libpanamatest.so" />
+			<fileset dir="${TEST_ROOT}/TestConfig/lib" includes="experimentaltest.jar" />
 		</copy>
 	</target>
 
@@ -62,13 +62,14 @@
 					<pathelement location="../TestConfig/lib/testng.jar"/>
 					<pathelement location="../TestConfig/lib/jcommander.jar"/>
 					<pathelement location="${DEST}/panamatest.jar"/>
+					<pathelement location="../TestConfig/lib/asm-all.jar"/>
 				</classpath>
 		</javac>
 	</target>
 
 	<target name="dist" depends="compile" description="generate the distribution" >
 		<mkdir dir="${DEST}"/>
-		<jar jarfile="${DEST}/PanamaTests.jar" filesonly="true">
+		<jar jarfile="${DEST}/ExperimentalTests.jar" filesonly="true">
 			<fileset dir="${build}"/>
 			<fileset dir="${src}/../" includes="*.properties,*.xml"/>
 		</jar>
@@ -80,7 +81,7 @@
 
 	<target name="build" >
 		<if>
-			<equals arg1="${JAVA_VERSION}" arg2="Panama"/>
+			<equals arg1="${JAVA_VERSION}" arg2="Experimental"/>
 			<then>
 				<antcall target="clean" inheritall="true" />
 			</then>
