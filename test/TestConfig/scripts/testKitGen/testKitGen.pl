@@ -40,7 +40,7 @@ my $impl           = '';
 my $output         = '';
 my @allLevels      = ( "sanity", "extended" );
 my @allGroups      = ( "functional", "openjdk", "external", "perf", "jck", "system" );
-my @allSubsets     = ( "SE80", "SE90", "SE100", "Panama", "Valhalla", "Experimental" );
+my @allSubsets     = ( "SE80", "SE90", "SE100", "Experimental", "Panama", "Valhalla" );
 my @allImpls       = ( "openj9", "hotspot", "sap" );
 
 foreach my $argv (@ARGV) {
