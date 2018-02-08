@@ -26,7 +26,7 @@
 	<test>
 		<testCaseName>NativeMethodHandleTest</testCaseName>
 		<command>$(JAVA_COMMAND) $(JVM_OPTIONS) \
-	-cp $(Q)$(RESOURCES_DIR)$(P)$(TESTNG)$(P)$(TEST_RESROOT)$(D)ExperimentalTests.jar$(Q) \
+	-cp $(Q)$(RESOURCES_DIR)$(P)$(TESTNG)$(P)$(TEST_RESROOT)$(D)FutureJEPsTests.jar$(Q) \
 	org.testng.TestNG -d $(REPORTDIR) $(Q)$(TEST_RESROOT)$(D)testng.xml$(Q) -testnames NativeMethodHandleTest \
 	-groups $(TEST_GROUP) \
 	-excludegroups $(DEFAULT_EXCLUDE); \
@@ -39,15 +39,15 @@
 			<group>functional</group>
 		</groups>
 		<subsets>
-			<!--subset>Panama</subset-->
-			<subset>Experimental</subset>
+			<subset>Panama</subset>
+			<subset>FutureJEPs</subset>
 		</subsets>
 	</test>
 
 	<test>
 		<testCaseName>HigherLevelNativeMethodHandleTest</testCaseName>
 		<command>$(JAVA_COMMAND) $(JVM_OPTIONS) \
-	-cp $(Q)$(RESOURCES_DIR)$(P)$(TESTNG)$(P)$(TEST_RESROOT)$(D)panamatest.jar$(P)$(TEST_RESROOT)$(D)ExperimentalTests.jar$(Q) \
+	-cp $(Q)$(RESOURCES_DIR)$(P)$(TESTNG)$(P)$(TEST_RESROOT)$(D)panamatest.jar$(P)$(TEST_RESROOT)$(D)FutureJEPsTests.jar$(Q) \
 	org.testng.TestNG -d $(REPORTDIR) $(Q)$(TEST_RESROOT)$(D)testng.xml$(Q) -testnames HigherLevelNativeMethodHandleTest \
 	-groups $(TEST_GROUP) \
 	-excludegroups $(DEFAULT_EXCLUDE); \
@@ -60,15 +60,15 @@
 			<group>functional</group>
 		</groups>
 		<subsets>
-			<!--subset>Panama</subset-->
-			<subset>Experimental</subset>
+			<subset>Panama</subset>
+			<subset>FutureJEPs</subset>
 		</subsets>
 	</test>
 
 	<test>
 		<testCaseName>CustomFFINativeMethodHandleTest</testCaseName>
 		<command>$(JAVA_COMMAND) $(JVM_OPTIONS) \
-	-cp $(Q)$(RESOURCES_DIR)$(P)$(TESTNG)$(P)$(TEST_RESROOT)$(D)panamatest.jar$(P)$(TEST_RESROOT)$(D)ExperimentalTests.jar$(Q) \
+	-cp $(Q)$(RESOURCES_DIR)$(P)$(TESTNG)$(P)$(TEST_RESROOT)$(D)panamatest.jar$(P)$(TEST_RESROOT)$(D)FutureJEPsTests.jar$(Q) \
 	org.testng.TestNG -d $(REPORTDIR) $(Q)$(TEST_RESROOT)$(D)testng.xml$(Q) -testnames CustomFFINativeMethodHandleTest \
 	-groups $(TEST_GROUP) \
 	-excludegroups $(DEFAULT_EXCLUDE); \
@@ -81,15 +81,15 @@
 			<group>functional</group>
 		</groups>
 		<subsets>
-			<!--subset>Panama</subset-->
-			<subset>Experimental</subset>
+			<subset>Panama</subset>
+			<subset>FutureJEPs</subset>
 		</subsets>
 	</test>
 	
 		<test>
 		<testCaseName>NestAttributeTest</testCaseName>
 		<command>$(JAVA_COMMAND) $(JVM_OPTIONS) \
-	-cp $(Q)$(LIB_DIR)$(D)asm-all.jar$(P)$(RESOURCES_DIR)$(P)$(TESTNG)$(P)$(TEST_RESROOT)$(D)ExperimentalTests.jar$(Q) \
+	-cp $(Q)$(LIB_DIR)$(D)asm-all.jar$(P)$(RESOURCES_DIR)$(P)$(TESTNG)$(P)$(TEST_RESROOT)$(D)FutureJEPsTests.jar$(Q) \
 	org.testng.TestNG -d $(REPORTDIR) $(Q)$(TEST_RESROOT)$(D)testng.xml$(Q) -testnames NestAttributeTest \
 	-groups $(TEST_GROUP) \
 	-excludegroups $(DEFAULT_EXCLUDE); \
@@ -102,8 +102,8 @@
 			<group>functional</group>
 		</groups>
 		<subsets>
-			<!--subset>Valhalla</subset-->
-			<subset>Experimental</subset>
+			<subset>Valhalla</subset>
+			<subset>FutureJEPs</subset>
 		</subsets>
 	</test>
 </playlist>

@@ -380,8 +380,8 @@
 	</configuration>
 	
 	<configuration
-		  label="EXPERIMENTAL"
-		  outputpath="EXPERIMENTAL/src"
+		  label="FUTURE-JEPS"
+		  outputpath="FUTURE-JEPS/src"
 		  flags="Panama, Valhalla-NestMates"
 		  dependencies="SIDECAR19-SE-B136"
 		  jdkcompliance="1.8">
