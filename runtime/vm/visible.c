@@ -28,6 +28,11 @@
 #include "ut_j9vm.h"
 #include "util_api.h"
 #include "vm_internal.h"
+#include "j9protos.h"
+
+#if defined(J9VM_OPT_VALHALLA_NESTMATES)
+static UDATA loadAndVerifyNestHost(J9VMThread *vmThread, J9Class *clazz);
+#endif /* defined(J9VM_OPT_VALHALLA_NESTMATES) */
 
 /**
  * Check visibility from sourceClass to destClass with modifiers specified
@@ -100,12 +105,21 @@ checkVisibility(J9VMThread *currentThread, J9Class* sourceClass, J9Class* destCl
 			}
 		} else if (modifiers & J9AccPrivate) {
 			/* Private */
-			if ((sourceClass != destClass)
+			if (sourceClass != destClass) {
 #if defined(J9VM_OPT_VALHALLA_NESTMATES)
-					&& (sourceClass->nestHost != destClass->nestHost)
+				/* loadAndVerifyNestHost returns an error if setting nest host field fails */
+				if (NULL == destClass->nestHost) {
+					result = loadAndVerifyNestHost(currentThread, destClass);
+				}
+				if ((J9_VISIBILITY_ALLOWED == result) && (NULL == sourceClass->nestHost)) {
+					result = loadAndVerifyNestHost(currentThread, sourceClass);
+				}
+				if ((J9_VISIBILITY_ALLOWED == result) && (sourceClass->nestHost != destClass->nestHost)) {
 #endif /* defined(J9VM_OPT_VALHALLA_NESTMATES) */
-			) {
-				result = J9_VISIBILITY_NON_MODULE_ACCESS_ERROR;
+					result = J9_VISIBILITY_NON_MODULE_ACCESS_ERROR;
+#if defined(J9VM_OPT_VALHALLA_NESTMATES)
+				}
+#endif /* defined(J9VM_OPT_VALHALLA_NESTMATES) */
 			}
 		} else if (modifiers & J9AccProtected) {
 			/* Protected */
@@ -142,3 +156,51 @@ checkVisibility(J9VMThread *currentThread, J9Class* sourceClass, J9Class* destCl
 
 	return result;
 }
+
+#if defined(J9VM_OPT_VALHALLA_NESTMATES)
+static UDATA loadAndVerifyNestHost(J9VMThread *vmThread, J9Class *clazz) {
+	J9Class *nestHost = NULL;
+	UDATA result = J9_VISIBILITY_ALLOWED;
+	J9ROMClass *romClass = clazz->romClass;
+	J9UTF8 *nestHostName = J9ROMCLASS_NESTHOSTNAME(romClass);
+
+	/* If no nest host is named, class is own nest host */
+	if (NULL == nestHostName) {
+		nestHost = clazz;
+	} else {
+		UDATA classLoadingFlags = J9_FINDCLASS_FLAG_THROW_ON_FAIL;
+		nestHost = internalFindClassUTF8(vmThread, J9UTF8_DATA(nestHostName), J9UTF8_LENGTH(nestHostName), clazz->classLoader, classLoadingFlags);
+
+		/* Nest host must be successfully loaded by the same classloader in the same package & verify the nest member */
+		if (NULL == nestHost) {
+			result = J9_VISIBILITY_NEST_HOST_LOADING_FAILURE_ERROR;
+		} else if (clazz->packageID != nestHost->packageID) {
+			result = J9_VISIBILITY_NEST_HOST_DIFFERENT_PACKAGE_ERROR;
+		} else {
+			/* The nest host must have a nestmembers attribute that claims this class. */
+			BOOLEAN verified = FALSE;
+			J9UTF8 *className = J9ROMCLASS_CLASSNAME(romClass);
+			J9SRP *nestMembers = J9ROMCLASS_NESTMEMBERS(nestHost->romClass);
+			U_16 nestMemberCount = nestHost->romClass->nestMemberCount;
+			U_16 i = 0;
+
+			for (i = 0; i < nestMemberCount; i++) {
+				J9UTF8 *nestMemberName = NNSRP_GET(nestMembers[i], J9UTF8*);
+				if (J9UTF8_EQUALS(className, nestMemberName)) {
+					verified = TRUE;
+					break;
+				}
+			}
+			if (!verified) {
+				result = J9_VISIBILITY_NEST_MEMBER_NOT_CLAIMED_ERROR;
+			}
+		}
+	}
+
+	/* If a problem occurred in nest host verification then the nest host value is invalid */
+	if  ((J9_VISIBILITY_ALLOWED == result) && (nestHost != NULL)) {
+		clazz->nestHost = nestHost;
+	}
+	return result;
+}
+#endif /* defined(J9VM_OPT_VALHALLA_NESTMATES) */
