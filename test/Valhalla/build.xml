@@ -29,6 +29,7 @@
 
 	<!-- set global properties for this build -->
 	<property name="DEST" value="${BUILD_ROOT}/Valhalla" />
+	<property name="ASM_DEST" value="${DEST}/ASM" />
 	<property name="BUILDINFO_FSROOT" value="${BUILD_ROOT}" />
 
 	<!--Properties for this particular build-->
@@ -38,13 +39,36 @@
 
 	<target name="init">
 		<mkdir dir="${DEST}" />
+		<mkdir dir="${ASM_DEST}" />
 		<mkdir dir="${build}"/>
 		<copy todir="${DEST}">
 			<fileset dir="${TEST_ROOT}/Valhalla" includes="libvalhallatest.so" />
 		</copy>
 	</target>
+	
+	<target name="get-asm7"  depends="init" description="Clone and compile asm7" >
+	<exec executable="git" dir="../../jvmtest/Valhalla/ASM/" >
+			<arg line="clone https://gitlab.ow2.org/asm/asm.git" />
+		</exec>
+		<exec executable="git" dir="../../jvmtest/Valhalla/ASM/asm" >
+			<arg line="fetch origin ASM7_NESTMATES" />
+		</exec>
+		<exec executable="git" dir="../../jvmtest/Valhalla/ASM/asm" >
+			<arg line="checkout ASM7_NESTMATES" />
+		</exec>
+		<exec executable="git" dir="../../jvmtest/Valhalla/ASM/asm" >
+			<arg line="pull origin ASM7_NESTMATES" />
+		</exec>
+		<exec executable="gradlew" dir="../../jvmtest/Valhalla/ASM/asm/gradle" >
+			<arg line="" />
+		</exec>
+		<exec executable="gradlew" dir="../../jvmtest/Valhalla/ASM/asm/gradle" >
+			<arg line="build" />
+		</exec>
+		<!--copy file="../../jvmtest/Valhalla/ASM/asm/asm/lib/asm-7.0.jar" tofile="../TestConfig/lib/asm-7.0.jar"/-->
+	</target>
 
-	<target name="compile" depends="init" description="Using ${JAVA_VERSION} java compile the source " >
+	<target name="compile" depends="get-asm7" description="Using ${JAVA_VERSION} java compile the source " >
 		<echo>Ant version is ${ant.version}</echo>
 		<echo>============COMPILER SETTINGS============</echo>
 		<echo>===fork:				yes</echo>
@@ -57,7 +81,7 @@
 			<classpath>
 				<pathelement location="../TestConfig/lib/testng.jar"/>
 				<pathelement location="../TestConfig/lib/jcommander.jar"/>
-				<pathelement location="../TestConfig/lib/asm-all.jar"/>
+				<pathelement location="../TestConfig/lib/asm-7.0.jar"/>
 			</classpath>
 		</javac>
 	</target>
