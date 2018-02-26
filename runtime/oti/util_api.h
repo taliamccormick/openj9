@@ -2118,6 +2118,11 @@ fixVTables_forNormalRedefine(J9VMThread * currentThread, J9HashTable * classPair
 void
 flushClassLoaderReflectCache(J9VMThread * currentThread, J9HashTable * classPairs);
 
+#if defined(J9VM_OPT_VALHALLA_NESTMATES)
+void
+fixNestMembers(J9VMThread * currentThread, J9HashTable * classPairs);
+#endif /* J9VM_OPT_VALHALLA_NESTMATES */
+
 #ifdef J9VM_INTERP_NATIVE_SUPPORT
 void
 jitClassRedefineEvent(J9VMThread * currentThread, J9JVMTIHCRJitEventData * jitEventData, UDATA extensionsEnabled);
@@ -2125,6 +2130,11 @@ jitClassRedefineEvent(J9VMThread * currentThread, J9JVMTIHCRJitEventData * jitEv
 
 void
 notifyGCOfClassReplacement(J9VMThread * currentThread, J9HashTable * classPairs, UDATA isFastHCR);
+
+#if defined(J9VM_OPT_VALHALLA_NESTMATES)
+void
+fixNestMembers(J9VMThread * currentThread, J9HashTable * classPairs);
+#endif /* defined(J9VM_OPT_VALHALLA_NESTMATES) */
 
 #endif /* J9VM_INTERP_HOT_CODE_REPLACEMENT */
 

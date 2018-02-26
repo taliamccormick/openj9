@@ -1107,6 +1107,11 @@ redefineClassesCommon(jvmtiEnv* env,
 				/* Notify the JIT about redefined classes */
 				jitClassRedefineEvent(currentThread, &jitEventData, extensionsEnabled);
 #endif
+
+#if defined(J9VM_OPT_VALHALLA_NESTMATES)
+				/* Update nests with redefined nest tops */
+				fixNestMembers(currentThread, classPairs);
+#endif /* defined(J9VM_OPT_VALHALLA_NESTMATES) */
 			}
 		}
 		notifyGCOfClassReplacement(currentThread, classPairs, !extensionsEnabled);
