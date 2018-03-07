@@ -1,4 +1,0 @@
-grant {
-	// so we can remove the security manager
-	permission java.lang.RuntimePermission "setSecurityManager";
-};
