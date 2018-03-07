@@ -50,7 +50,4 @@
 		<reason>Testcase requires retransform support, which will be implemented under JAZZ 19331</reason>
 	</exclude>
 
-	<exclude id="nmr001" platform="all">
-		<reason>Nestmates are not enabled on java9</reason>
-	</exclude>
 </suite>
