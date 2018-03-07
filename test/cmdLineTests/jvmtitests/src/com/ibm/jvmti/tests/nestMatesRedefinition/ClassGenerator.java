@@ -145,7 +145,7 @@ public class ClassGenerator implements Opcodes {
 		methodVisitor.visitEnd();
 
 		String[] nestMembers = {"D", "E", "F"};
-		NestMembersAttribute attr = new NestMembersAttribute(nestmems);
+		NestMembersAttribute attr = new NestMembersAttribute(nestMembers);
 		classWriter.visitAttribute(attr);
 
 		classWriter.visitEnd();
@@ -171,7 +171,7 @@ public class ClassGenerator implements Opcodes {
 		methodVisitor.visitEnd();
 
 		String[] nestMembers = {"A", "B"};
-		NestMembersAttribute attr = new NestMembersAttribute(nestmems);
+		NestMembersAttribute attr = new NestMembersAttribute(nestMembers);
 		classWriter.visitAttribute(attr);
 
 		classWriter.visitEnd();
