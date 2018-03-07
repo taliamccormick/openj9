@@ -32,7 +32,7 @@ import org.objectweb.asm.Opcodes;
 public class ClassGenerator implements Opcodes {
 
 	public static byte[] nestHostNoAttribute () throws Exception {
-		ClassWriter classWriter = new ClassWriter(COMPUTE_FRAMES | COMPUTE_MAXS);
+		ClassWriter classWriter = new ClassWriter(0);
 
 		classWriter.visit(V1_8, ACC_PUBLIC | ACC_SUPER, "NestHost", null, "java/lang/Object", null);
 		classWriter.visitSource("NestHost.java", null);		
@@ -54,7 +54,7 @@ public class ClassGenerator implements Opcodes {
 	}
 
 	public static byte[] nestHostWithNestMembersAttribute () throws Exception {
-		ClassWriter classWriter = new ClassWriter(COMPUTE_FRAMES | COMPUTE_MAXS);
+		ClassWriter classWriter = new ClassWriter(0);
 
 		classWriter.visit(V1_8, ACC_PUBLIC | ACC_SUPER, "NestHost", null, "java/lang/Object", null);
 		classWriter.visitSource("NestHost.java", null);
@@ -80,7 +80,7 @@ public class ClassGenerator implements Opcodes {
 	}
 
 	public static byte[] nestMemberNoAttribute () throws Exception {
-		ClassWriter classWriter = new ClassWriter(COMPUTE_FRAMES | COMPUTE_MAXS);
+		ClassWriter classWriter = new ClassWriter(0);
 
 		classWriter.visit(V1_8, ACC_PUBLIC | ACC_SUPER, "NestMembers", null, "java/lang/Object", null);
 		classWriter.visitSource("NestHost.java", null);		
@@ -102,7 +102,7 @@ public class ClassGenerator implements Opcodes {
 	}
 
 	public static byte[] nestMemberWithNestHostAttribute () throws Exception {
-		ClassWriter classWriter = new ClassWriter(COMPUTE_FRAMES | COMPUTE_MAXS);
+		ClassWriter classWriter = new ClassWriter(0);
 
 		classWriter.visit(V1_8, ACC_PUBLIC | ACC_SUPER, "NestMembers", null, "java/lang/Object", null);
 		classWriter.visitSource("NestMembers.java", null);
@@ -127,7 +127,7 @@ public class ClassGenerator implements Opcodes {
 	}
 
 	public static byte[] nestHostWithAlteredNestMembersAttributeData () throws Exception {
-		ClassWriter classWriter = new ClassWriter(COMPUTE_FRAMES | COMPUTE_MAXS);
+		ClassWriter classWriter = new ClassWriter(0);
 
 		classWriter.visit(V1_8, ACC_PUBLIC | ACC_SUPER, "NestHost", null, "java/lang/Object", null);
 		classWriter.visitSource("NestHost.java", null);
@@ -153,7 +153,7 @@ public class ClassGenerator implements Opcodes {
 	}
 
 	public static byte[] nestHostWithAlteredNestMembersAttributeLength () throws Exception {
-		ClassWriter classWriter = new ClassWriter(COMPUTE_FRAMES | COMPUTE_MAXS);
+		ClassWriter classWriter = new ClassWriter(0);
 
 		classWriter.visit(V1_8, ACC_PUBLIC | ACC_SUPER, "NestHost", null, "java/lang/Object", null);
 		classWriter.visitSource("NestHost.java", null);
@@ -179,7 +179,7 @@ public class ClassGenerator implements Opcodes {
 	}
 
 	public static byte[] nestMembersWithAlteredNestHostAttribute () throws Exception {
-		ClassWriter classWriter = new ClassWriter(COMPUTE_FRAMES | COMPUTE_MAXS);
+		ClassWriter classWriter = new ClassWriter(0);
 
 		classWriter.visit(V1_8, ACC_PUBLIC | ACC_SUPER, "NestMembers", null, "java/lang/Object", null);
 		classWriter.visitSource("NestMembers.java", null);
