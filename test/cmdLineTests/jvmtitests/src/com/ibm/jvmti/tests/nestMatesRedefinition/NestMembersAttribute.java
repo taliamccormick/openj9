@@ -79,9 +79,8 @@ final class NestMembersAttribute extends Attribute{
 		
 		b.putShort(nestMembers.length);
 		
-		int nestMemberIndex;
 		for(int i = 0; i < nestMembers.length; i++){
-			nestMemberIndex = cw.newClass(nestMembers[i]);
+			int nestMemberIndex = cw.newClass(nestMembers[i]);
 			b.putShort(nestMemberIndex);
 		}
 		

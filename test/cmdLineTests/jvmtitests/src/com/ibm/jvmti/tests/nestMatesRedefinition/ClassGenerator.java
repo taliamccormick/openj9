@@ -52,12 +52,58 @@ public class ClassGenerator implements Opcodes {
 		classWriter.visitEnd();
 		return classWriter.toByteArray();
 	}
+	
+	public static byte[] nestHostNoAttributeForceRedefinition () throws Exception {
+		ClassWriter classWriter = new ClassWriter(0);
+
+		classWriter.visit(V1_8, ACC_PUBLIC | ACC_SUPER, "NestHost", null, "java/lang/Object", null);
+
+		MethodVisitor methodVisitor;
+		methodVisitor = classWriter.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
+		methodVisitor.visitCode();
+		Label label0 = new Label();
+		methodVisitor.visitLabel(label0);
+		methodVisitor.visitLineNumber(2, label0);
+		methodVisitor.visitVarInsn(ALOAD, 0);
+		methodVisitor.visitMethodInsn(INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false);
+		methodVisitor.visitInsn(RETURN);
+		methodVisitor.visitMaxs(1, 1);
+		methodVisitor.visitEnd();
+
+		classWriter.visitEnd();
+		return classWriter.toByteArray();
+	}
 
 	public static byte[] nestHostWithNestMembersAttribute () throws Exception {
 		ClassWriter classWriter = new ClassWriter(0);
 
 		classWriter.visit(V1_8, ACC_PUBLIC | ACC_SUPER, "NestHost", null, "java/lang/Object", null);
 		classWriter.visitSource("NestHost.java", null);
+
+		MethodVisitor methodVisitor;
+		methodVisitor = classWriter.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
+		methodVisitor.visitCode();
+		Label label0 = new Label();
+		methodVisitor.visitLabel(label0);
+		methodVisitor.visitLineNumber(2, label0);
+		methodVisitor.visitVarInsn(ALOAD, 0);
+		methodVisitor.visitMethodInsn(INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false);
+		methodVisitor.visitInsn(RETURN);
+		methodVisitor.visitMaxs(1, 1);
+		methodVisitor.visitEnd();
+
+		String[] nestMembers = {"A", "B", "C"};
+		NestMembersAttribute attr = new NestMembersAttribute(nestMembers);
+		classWriter.visitAttribute(attr);
+
+		classWriter.visitEnd();
+		return classWriter.toByteArray();
+	}
+	
+	public static byte[] nestHostWithNestMembersAttributeForceRedefinition () throws Exception {
+		ClassWriter classWriter = new ClassWriter(0);
+
+		classWriter.visit(V1_8, ACC_PUBLIC | ACC_SUPER, "NestHost", null, "java/lang/Object", null);
 
 		MethodVisitor methodVisitor;
 		methodVisitor = classWriter.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
@@ -100,6 +146,27 @@ public class ClassGenerator implements Opcodes {
 		classWriter.visitEnd();
 		return classWriter.toByteArray();
 	}
+	
+	public static byte[] nestMemberNoAttributeForceRedefinition () throws Exception {
+		ClassWriter classWriter = new ClassWriter(0);
+
+		classWriter.visit(V1_8, ACC_PUBLIC | ACC_SUPER, "NestMembers", null, "java/lang/Object", null);
+
+		MethodVisitor methodVisitor;
+		methodVisitor = classWriter.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
+		methodVisitor.visitCode();
+		Label label0 = new Label();
+		methodVisitor.visitLabel(label0);
+		methodVisitor.visitLineNumber(2, label0);
+		methodVisitor.visitVarInsn(ALOAD, 0);
+		methodVisitor.visitMethodInsn(INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false);
+		methodVisitor.visitInsn(RETURN);
+		methodVisitor.visitMaxs(1, 1);
+		methodVisitor.visitEnd();
+
+		classWriter.visitEnd();
+		return classWriter.toByteArray();
+	}
 
 	public static byte[] nestMemberWithNestHostAttribute () throws Exception {
 		ClassWriter classWriter = new ClassWriter(0);
@@ -125,12 +192,61 @@ public class ClassGenerator implements Opcodes {
 		classWriter.visitEnd();
 		return classWriter.toByteArray();
 	}
+	
+	public static byte[] nestMemberWithNestHostAttributeForceRedefinition () throws Exception {
+		ClassWriter classWriter = new ClassWriter(0);
+
+		classWriter.visit(V1_8, ACC_PUBLIC | ACC_SUPER, "NestMembers", null, "java/lang/Object", null);
+
+		MethodVisitor methodVisitor;
+		methodVisitor = classWriter.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
+		methodVisitor.visitCode();
+		Label label0 = new Label();
+		methodVisitor.visitLabel(label0);
+		methodVisitor.visitLineNumber(2, label0);
+		methodVisitor.visitVarInsn(ALOAD, 0);
+		methodVisitor.visitMethodInsn(INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false);
+		methodVisitor.visitInsn(RETURN);
+		methodVisitor.visitMaxs(1, 1);
+		methodVisitor.visitEnd();
+
+		NestHostAttribute attr = new NestHostAttribute("host");
+		classWriter.visitAttribute(attr);
+
+		classWriter.visitEnd();
+		return classWriter.toByteArray();
+	}
 
 	public static byte[] nestHostWithAlteredNestMembersAttributeData () throws Exception {
 		ClassWriter classWriter = new ClassWriter(0);
 
 		classWriter.visit(V1_8, ACC_PUBLIC | ACC_SUPER, "NestHost", null, "java/lang/Object", null);
 		classWriter.visitSource("NestHost.java", null);
+
+		MethodVisitor methodVisitor;
+		methodVisitor = classWriter.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
+		methodVisitor.visitCode();
+		Label label0 = new Label();
+		methodVisitor.visitLabel(label0);
+		methodVisitor.visitLineNumber(2, label0);
+		methodVisitor.visitVarInsn(ALOAD, 0);
+		methodVisitor.visitMethodInsn(INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false);
+		methodVisitor.visitInsn(RETURN);
+		methodVisitor.visitMaxs(1, 1);
+		methodVisitor.visitEnd();
+
+		String[] nestMembers = {"D", "E", "F"};
+		NestMembersAttribute attr = new NestMembersAttribute(nestMembers);
+		classWriter.visitAttribute(attr);
+
+		classWriter.visitEnd();
+		return classWriter.toByteArray();
+	}
+	
+	public static byte[] nestHostWithAlteredNestMembersAttributeDataForceRedefinition () throws Exception {
+		ClassWriter classWriter = new ClassWriter(0);
+
+		classWriter.visit(V1_8, ACC_PUBLIC | ACC_SUPER, "NestHost", null, "java/lang/Object", null);
 
 		MethodVisitor methodVisitor;
 		methodVisitor = classWriter.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
@@ -177,12 +293,61 @@ public class ClassGenerator implements Opcodes {
 		classWriter.visitEnd();
 		return classWriter.toByteArray();
 	}
+	
+	public static byte[] nestHostWithAlteredNestMembersAttributeLengthForceRedefinition () throws Exception {
+		ClassWriter classWriter = new ClassWriter(0);
+
+		classWriter.visit(V1_8, ACC_PUBLIC | ACC_SUPER, "NestHost", null, "java/lang/Object", null);
+
+		MethodVisitor methodVisitor;
+		methodVisitor = classWriter.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
+		methodVisitor.visitCode();
+		Label label0 = new Label();
+		methodVisitor.visitLabel(label0);
+		methodVisitor.visitLineNumber(2, label0);
+		methodVisitor.visitVarInsn(ALOAD, 0);
+		methodVisitor.visitMethodInsn(INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false);
+		methodVisitor.visitInsn(RETURN);
+		methodVisitor.visitMaxs(1, 1);
+		methodVisitor.visitEnd();
+
+		String[] nestMembers = {"A", "B"};
+		NestMembersAttribute attr = new NestMembersAttribute(nestMembers);
+		classWriter.visitAttribute(attr);
+
+		classWriter.visitEnd();
+		return classWriter.toByteArray();
+	}
 
 	public static byte[] nestMembersWithAlteredNestHostAttribute () throws Exception {
 		ClassWriter classWriter = new ClassWriter(0);
 
 		classWriter.visit(V1_8, ACC_PUBLIC | ACC_SUPER, "NestMembers", null, "java/lang/Object", null);
 		classWriter.visitSource("NestMembers.java", null);
+
+		MethodVisitor methodVisitor;
+		methodVisitor = classWriter.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
+		methodVisitor.visitCode();
+		Label label0 = new Label();
+		methodVisitor.visitLabel(label0);
+		methodVisitor.visitLineNumber(2, label0);
+		methodVisitor.visitVarInsn(ALOAD, 0);
+		methodVisitor.visitMethodInsn(INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false);
+		methodVisitor.visitInsn(RETURN);
+		methodVisitor.visitMaxs(1, 1);
+		methodVisitor.visitEnd();
+
+		NestHostAttribute attr = new NestHostAttribute("AlteredHostName");
+		classWriter.visitAttribute(attr);
+
+		classWriter.visitEnd();
+		return classWriter.toByteArray();
+	}
+	
+	public static byte[] nestMembersWithAlteredNestHostAttributeForceRedefinition () throws Exception {
+		ClassWriter classWriter = new ClassWriter(0);
+
+		classWriter.visit(V1_8, ACC_PUBLIC | ACC_SUPER, "NestMembers", null, "java/lang/Object", null);
 
 		MethodVisitor methodVisitor;
 		methodVisitor = classWriter.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
