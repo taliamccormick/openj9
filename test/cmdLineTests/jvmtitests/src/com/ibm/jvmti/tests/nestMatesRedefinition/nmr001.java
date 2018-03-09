@@ -230,7 +230,7 @@ public class nmr001 {
 		try {
 			CustomClassLoader classloader = new CustomClassLoader();
 			byte[] bytes = ClassGenerator.nestMemberWithNestHostAttribute();
-			Class<?> clazz = classloader.getClass("NestMember", bytes);
+			Class<?> clazz = classloader.getClass("NestMembers", bytes);
 			Object instance = clazz.getDeclaredConstructor().newInstance();
 			bytes = ClassGenerator.nestMembersWithAlteredNestHostAttribute();
 			successfulRedefinition = redefineClass(clazz, bytes.length, bytes);
