@@ -53,36 +53,30 @@ jint JNICALL
 Java_com_ibm_jvmti_tests_nestMatesRedefinition_nmr001_redefineClass(JNIEnv *jni_env, jclass klass, jclass originalClass, jint classBytesSize, jbyteArray redefinedClassByteData)
 {
 	JVMTI_ACCESS_FROM_AGENT(env);
-	jbyte *classByteDataRegion;
+	jbyte *classByteDataRegion = NULL;
 	char *classFileName = env->testArgs;
 	jvmtiClassDefinition classdef;
-	jvmtiError err; 
+	jvmtiError err;
 
 	err = (*jvmti_env)->Allocate(jvmti_env, classBytesSize, (unsigned char **) &classByteDataRegion);
-
 	if (err != JVMTI_ERROR_NONE) {
-		error(env, err, "Unable to allocate temp buffer for the class file");
-		return (jint) err;
-	} else if ((*jni_env)->ExceptionCheck(jni_env)) {
-		return (jint) JVMTI_ERROR_INTERNAL;
+		goto done;
 	}
 
 	(*jni_env)->GetByteArrayRegion(jni_env, redefinedClassByteData, 0, classBytesSize, classByteDataRegion);
+	if ((*jni_env)->ExceptionCheck(jni_env)) {
+		err = JVMTI_ERROR_INTERNAL;
+		goto freeMem;
+	}
 
 	classdef.class_bytes = (unsigned char *) classByteDataRegion;
 	classdef.class_byte_count = classBytesSize;
 	classdef.klass = originalClass;
 
 	err = (*jvmti_env)->RedefineClasses(jvmti_env, 1, &classdef);
+
+freeMem:
 	(*jvmti_env)->Deallocate(jvmti_env, (unsigned char *) classByteDataRegion);
-
-	/*if (err != JVMTI_ERROR_NONE) {
-		error(env, err, "RedefineClasses failed");
-		return (jint) err;
-	} else*/
-	if ((*jni_env)->ExceptionCheck(jni_env)) {
-		return (jint) JVMTI_ERROR_INTERNAL;
-	}
-
+done:
 	return (jint) err;
 }
