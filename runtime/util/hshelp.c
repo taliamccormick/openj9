@@ -2170,6 +2170,7 @@ fixNestMembers(J9VMThread * currentThread, J9HashTable * classPairs)
 {
 	J9HashTableState hashTableState;
 	J9JVMTIClassPair *classPair = hashTableStartDo(classPairs, &hashTableState);
+	J9InternalVMFunctions *vmFuncs = currentThread->javaVM->internalVMFunctions;
 
 	while (NULL != classPair) {
 		J9Class *originalRAMClass = classPair->originalRAMClass;
@@ -2183,9 +2184,11 @@ fixNestMembers(J9VMThread * currentThread, J9HashTable * classPairs)
 
 			for (i = 0; i < nestMemberCount; i++) {
 				J9UTF8 *nestMemberName = NNSRP_GET(nestMembers[i], J9UTF8*);
-				J9Class *nestMember = hashClassTableAt(classLoader, J9UTF8_DATA(nestMemberName), J9UTF8_LENGTH(nestMemberName));
-				if (nestMember->nestHost == originalRAMClass) {
-					nestMember->nestHost = replacementRAMClass;
+				J9Class *nestMember = vmFuncs->hashClassTableAt(classLoader, J9UTF8_DATA(nestMemberName), J9UTF8_LENGTH(nestMemberName));
+				if (NULL != nestMember) {
+					if (nestMember->nestHost == originalRAMClass) {
+						nestMember->nestHost = replacementRAMClass;
+					}
 				}
 			}
 		}

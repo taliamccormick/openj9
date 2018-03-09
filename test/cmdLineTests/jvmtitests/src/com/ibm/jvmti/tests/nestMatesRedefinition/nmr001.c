@@ -76,10 +76,11 @@ Java_com_ibm_jvmti_tests_nestMatesRedefinition_nmr001_redefineClass(JNIEnv *jni_
 	err = (*jvmti_env)->RedefineClasses(jvmti_env, 1, &classdef);
 	(*jvmti_env)->Deallocate(jvmti_env, (unsigned char *) classByteDataRegion);
 
-	if (err != JVMTI_ERROR_NONE) {
+	/*if (err != JVMTI_ERROR_NONE) {
 		error(env, err, "RedefineClasses failed");
 		return (jint) err;
-	} else if ((*jni_env)->ExceptionCheck(jni_env)) {
+	} else*/
+	if ((*jni_env)->ExceptionCheck(jni_env)) {
 		return (jint) JVMTI_ERROR_INTERNAL;
 	}
 
