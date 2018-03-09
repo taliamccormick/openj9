@@ -131,13 +131,36 @@ public class nmr001 {
 		}
 		return JVMTI_ERROR_UNSUPPORTED_REDEFINITION_CLASS_ATTRIBUTE_CHANGED == successfulRedefinition;
 	}
+	public boolean testRedefinitionAddingNestMembersAttribute() {
+		int successfulRedefinition = 0;
+		try {
+			System.out.println("Start test");
+			CustomClassLoader classloader = new CustomClassLoader();
+			System.out.println("Classloader: " + classloader);
+			byte[] bytes = ClassGenerator.nestHostNoAttribute();
+			System.out.println("bytes: " + bytes);
+			Class<?> clazz = classloader.getClass("NestHost", bytes);
+			System.out.println("clazz: " + clazz);
+			Object instance = clazz.getDeclaredConstructor().newInstance();
+			System.out.println("instance: " + instance);
+			bytes = ClassGenerator.nestHostWithNestMembersAttribute();
+			System.out.println("bytes: " + bytes);
+			successfulRedefinition = redefineClass(clazz, bytes.length, bytes);
+			System.out.println("successfulRedefinition: " + successfulRedefinition);
+		} catch (Exception e) {
+			System.out.println("Exception caught: " + e + " " + e.getCause());
+			return false;
+		}
+		System.out.println("JVMTI_ERROR_UNSUPPORTED_REDEFINITION_CLASS_ATTRIBUTE_CHANGED == successfulRedefinition: " + JVMTI_ERROR_UNSUPPORTED_REDEFINITION_CLASS_ATTRIBUTE_CHANGED + " " +  successfulRedefinition);
+		return JVMTI_ERROR_UNSUPPORTED_REDEFINITION_CLASS_ATTRIBUTE_CHANGED == successfulRedefinition;
+	}
 	
 	/*
 	 * Tests invalid nest redefinition by adding a nest members attribute
 	 * 
 	 * @return	boolean 		true if test passes; false otherwise
 	 */
-	public boolean testRedefinitionAddingNestMembersAttribute() {
+	/*public boolean testRedefinitionAddingNestMembersAttribute() {
 		int successfulRedefinition = 0;
 		try {
 			CustomClassLoader classloader = new CustomClassLoader();
@@ -150,7 +173,7 @@ public class nmr001 {
 			return false;
 		}
 		return JVMTI_ERROR_UNSUPPORTED_REDEFINITION_CLASS_ATTRIBUTE_CHANGED == successfulRedefinition;
-	}
+	}*/
 	
 	/*
 	 * Tests invalid nest redefinition by removing a nest host attribute
