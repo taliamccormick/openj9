@@ -4,3 +4,6 @@ export BUILD_LIST=cmdLineTests,cmdline_options_tester,cmdline_options_testresour
 export SPEC=linux_x86-64_cmprssptrs
 export JAVA_BIN=/team/tdmccormick/projects/20170509-NestMates/VM_Nestmates_JvmtiTests/bin/
 
+make cmdLineTester_jvmtitests_0
+
+
