@@ -1951,6 +1951,10 @@ Java_java_lang_Class_getNestHostImpl(JNIEnv *env, jobject recv)
 	 * getNestHostImpl returns this.
 	 */
 	if (NULL == nestHost) {
+		/* If loadAndCheckNestHost can not successfully load & verify a class's
+		 * nest host, then it will return the class - as required by the
+		 * getNestHost spec.
+		 */
 		nestHost = loadAndCheckNestHost(currentThread, clazz, FALSE);
 		if (NULL == nestHost) {
 			nestHost = clazz;
@@ -1993,6 +1997,10 @@ Java_java_lang_Class_getNestMembersImpl(JNIEnv *env, jobject recv)
 	U_16 nestMemberCount = 0;
 
 	if (NULL == nestHost) {
+		/* If loadAndCheckNestHost can not successfully load & verify a class's
+		 * nest host and canThrow is true, then it will return the class and
+		 * set an exception.
+		 */
 		nestHost = loadAndCheckNestHost(currentThread, clazz, TRUE);
 	}
 	if (NULL != currentThread->currentException) {
@@ -2041,7 +2049,7 @@ Java_java_lang_Class_getNestMembersImpl(JNIEnv *env, jobject recv)
 			} else if (NULL == nestMember->nestHost) {
 				/* If loadAndCheckNestHost fails to set the nest member's nest
 				 * host (due to loading or verification error), then it sets an
-				 * IncompatibleClassChangeError
+				 * ImcompatibleClassChangeError. The return value is not needed.
 				 */
 				loadAndCheckNestHost(currentThread, nestMember, TRUE);
 				if (NULL != currentThread->currentException) {
