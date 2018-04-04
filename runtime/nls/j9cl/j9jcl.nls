@@ -423,7 +423,7 @@ J9NLS_JCL_HOSTCLASS_ANONCLASS_DIFFERENT_PACKAGES.system_action=
 J9NLS_JCL_HOSTCLASS_ANONCLASS_DIFFERENT_PACKAGES.user_response=
 # END NON-TRANSLATABLE
 
-J9NLS_JCL_NEST_MEMBER_CLAIMS_DIFFERENT_NEST_HOST=Nest member %2$.*1$s in %4$.*3$s declares a different nest host of %6$.*5$s
+J9NLS_JCL_NEST_MEMBER_CLAIMS_DIFFERENT_NEST_HOST=Nest member %2$.*1$s in %4$.*3$s declares a different nest host
 # START NON-TRANSLATABLE
 J9NLS_JCL_NEST_MEMBER_CLAIMS_DIFFERENT_NEST_HOST.sample_input_1=Foobar
 J9NLS_JCL_NEST_MEMBER_CLAIMS_DIFFERENT_NEST_HOST.sample_input_2=6
@@ -443,7 +443,7 @@ J9NLS_JCL_NEST_MEMBER_CLAIMS_DIFFERENT_NEST_HOST.user_response=Contact the provi
 J9NLS_JCL_NESTMATES_CLASS_FAILED_TO_LOAD=Nest member %2$.*1$s must be able to load to be loaded by nest host %4$.*3$s
 # START NON-TRANSLATABLE
 J9NLS_JCL_NESTMATES_CLASS_FAILED_TO_LOAD.explanation=Nest member class and nest host class were loaded with different class loaders.
-J9NLS_JCL_NESTMATES_CLASS_FAILED_TO_LOAD.system_action=The JVM will throw a java/lang/VerifyError
+J9NLS_JCL_NESTMATES_CLASS_FAILED_TO_LOAD.system_action=The JVM will throw a ICCE
 J9NLS_JCL_NESTMATES_CLASS_FAILED_TO_LOAD.user_response=Load class and nest host class with same classloader.
 # END NON-TRANSLATABLE
 
