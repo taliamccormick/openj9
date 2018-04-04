@@ -1797,9 +1797,10 @@ setNestmatesVerificationError(J9VMThread *vmThread, const char *nlsTemplate, UDA
 {
 	J9JavaVM *vm = vmThread->javaVM;
 	J9InternalVMFunctions *vmFuncs = vm->internalVMFunctions;
+	char *msg = NULL;
+
 	PORT_ACCESS_FROM_VMC(vmThread);
 
-	char *msg = NULL;
 	if (NULL != nlsTemplate) {
 		UDATA msgLen = j9str_printf(PORTLIB, NULL, 0, nlsTemplate,
 				J9UTF8_LENGTH(nestMemberName), J9UTF8_DATA(nestMemberName),
@@ -1836,13 +1837,6 @@ loadAndCheckNestHost(J9VMThread *vmThread, J9Class *clazz, BOOLEAN canThrow) {
 	J9Class *nestHost = clazz->nestHost;
 
 	if (NULL == nestHost) {
-		J9JavaVM *vm = vmThread->javaVM;
-		J9InternalVMFunctions *vmFuncs = vm->internalVMFunctions;
-		PORT_ACCESS_FROM_VMC(vmThread);
-
-		J9ROMClass *romClass = clazz->romClass;
-		J9UTF8 *className = J9ROMCLASS_CLASSNAME(romClass);
-		J9UTF8 *nestHostName = J9ROMCLASS_NESTHOSTNAME(romClass);
 		BOOLEAN verified = FALSE;
 
 		/* If no nest host is named, class is own nest host */
@@ -1850,7 +1844,15 @@ loadAndCheckNestHost(J9VMThread *vmThread, J9Class *clazz, BOOLEAN canThrow) {
 			nestHost = clazz;
 			verified = TRUE;
 		} else {
+			J9JavaVM *vm = vmThread->javaVM;
+			J9InternalVMFunctions *vmFuncs = vm->internalVMFunctions;
+			J9ROMClass *romClass = clazz->romClass;
+			J9UTF8 *className = J9ROMCLASS_CLASSNAME(romClass);
+			J9UTF8 *nestHostName = J9ROMCLASS_NESTHOSTNAME(romClass);
 			UDATA classLoadingFlags = 0;
+
+			PORT_ACCESS_FROM_VMC(vmThread);
+
 			if (canThrow) {
 				classLoadingFlags = J9_FINDCLASS_FLAG_THROW_ON_FAIL;
 			} else {
@@ -1980,8 +1982,6 @@ Java_java_lang_Class_getNestMembersImpl(JNIEnv *env, jobject recv)
 	J9InternalVMFunctions *vmFuncs = vm->internalVMFunctions;
 	J9MemoryManagerFunctions *mmFuncs = vm->memoryManagerFunctions;
 
-	PORT_ACCESS_FROM_VMC(currentThread);
-
 	j9object_t resultObject = NULL;
 	jobject result = NULL;
 
@@ -1989,12 +1989,14 @@ Java_java_lang_Class_getNestMembersImpl(JNIEnv *env, jobject recv)
 	J9Class *jlClass = NULL;
 	J9Class *arrayClass = NULL;
 
-	vmFuncs->internalEnterVMFromJNI(currentThread);
-
 	J9Class *clazz = J9VM_J9CLASS_FROM_HEAPCLASS(currentThread, J9_JNI_UNWRAP_REFERENCE(recv));
 	J9Class *nestHost = clazz->nestHost;
 	J9ROMClass *romHostClass = NULL;
 	U_16 nestMemberCount = 0;
+
+	PORT_ACCESS_FROM_VMC(currentThread);
+
+	vmFuncs->internalEnterVMFromJNI(currentThread);
 
 	if (NULL == nestHost) {
 		/* If loadAndCheckNestHost can not successfully load & verify a class's
