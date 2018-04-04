@@ -1861,15 +1861,14 @@ loadAndCheckNestHost(J9VMThread *vmThread, J9Class *clazz, BOOLEAN canThrow) {
 			verified = TRUE;
 		} else {
 			UDATA classLoadingFlags = 0;
-			if (TRUE == canThrow) {
+			if (canThrow) {
 				classLoadingFlags = J9_FINDCLASS_FLAG_THROW_ON_FAIL;
 			} else {
 				classLoadingFlags = J9_FINDCLASS_FLAG_EXISTING_ONLY;
 			}
 			nestHost = vmFuncs->internalFindClassUTF8(vmThread, J9UTF8_DATA(nestHostName), J9UTF8_LENGTH(nestHostName), clazz->classLoader, classLoadingFlags);
 
-			/*
-			 * If this can throw, then we must check that the nest host is successfully
+			/* If this can throw, then we must check that the nest host is successfully
 			 * loaded by the same classloader in the same package & verifies the nest
 			 * member. Upon successful verification of the nest host class, the nest
 			 * host field is set.
@@ -1877,11 +1876,11 @@ loadAndCheckNestHost(J9VMThread *vmThread, J9Class *clazz, BOOLEAN canThrow) {
 			 * whether a nest host or 'this' is returned.
 			 */
 			if (NULL == nestHost) {
-				if (TRUE == canThrow) {
+				if (canThrow) {
 					const char *nlsTemplate = j9nls_lookup_message(
 							J9NLS_DO_NOT_PRINT_MESSAGE_TAG | J9NLS_DO_NOT_APPEND_NEWLINE,
 							J9NLS_JCL_NESTMATES_CLASS_FAILED_TO_LOAD,
-							"Nest member %2$.*1$s must be able to load nest host %4$.*3$s");
+							NULL);
 					if (NULL != nlsTemplate) {
 						UDATA msgLen = j9str_printf(PORTLIB, NULL, 0, nlsTemplate,
 								J9UTF8_LENGTH(className), J9UTF8_DATA(className),
@@ -1893,11 +1892,11 @@ loadAndCheckNestHost(J9VMThread *vmThread, J9Class *clazz, BOOLEAN canThrow) {
 					}
 				}
 			} else if (clazz->packageID != nestHost->packageID) {
-				if (TRUE == canThrow) {
+				if (canThrow) {
 					const char *nlsTemplate = j9nls_lookup_message(
 							J9NLS_DO_NOT_PRINT_MESSAGE_TAG | J9NLS_DO_NOT_APPEND_NEWLINE,
 							J9NLS_JCL_NEST_HOST_HAS_DIFFERENT_PACKAGE,
-							"Nest member class %2$.*1$s must be in the same package as nest host class %4$.*3$s");
+							NULL);
 					if (NULL != nlsTemplate) {
 						UDATA msgLen = j9str_printf(PORTLIB, NULL, 0, nlsTemplate,
 								J9UTF8_LENGTH(className), J9UTF8_DATA(className),
@@ -1922,13 +1921,13 @@ loadAndCheckNestHost(J9VMThread *vmThread, J9Class *clazz, BOOLEAN canThrow) {
 					}
 				}
 
-				if (TRUE == verified) {
+				if (verified) {
 					clazz->nestHost = nestHost;
-				} else if (TRUE == canThrow) {
+				} else if (canThrow) {
 					const char *nlsTemplate = j9nls_lookup_message(
 							J9NLS_DO_NOT_PRINT_MESSAGE_TAG | J9NLS_DO_NOT_APPEND_NEWLINE,
 							J9NLS_JCL_NEST_MEMBER_NOT_CLAIMED_BY_NEST_HOST,
-							"Class %2$.*1$s must be claimed by its nest host %4$.*3$s");
+							NULL);
 					if (NULL != nlsTemplate) {
 						UDATA msgLen = j9str_printf(PORTLIB, NULL, 0, nlsTemplate,
 								J9UTF8_LENGTH(className), J9UTF8_DATA(className),
@@ -1948,10 +1947,10 @@ loadAndCheckNestHost(J9VMThread *vmThread, J9Class *clazz, BOOLEAN canThrow) {
 		 * If a nest host can not be successfully verified, then a LinkageError
 		 * is set (if permitted) and null is returned as the nest host.
 		 */
-		if (TRUE == verified) {
+		if (verified) {
 			clazz->nestHost = nestHost;
 		} else {
-			if (TRUE == canThrow) {
+			if (canThrow) {
 				vmFuncs->setCurrentExceptionUTF(vmThread, J9VMCONSTANTPOOL_JAVALANGINCOMPATIBLECLASSCHANGEERROR, nlsMsg);
 				j9mem_free_memory(nlsMsg);
 			}
@@ -2019,10 +2018,9 @@ Java_java_lang_Class_getNestMembersImpl(JNIEnv *env, jobject recv)
 	U_16 nestMemberCount = 0;
 
 	if (NULL == nestHost) {
-		loadAndCheckNestHost(currentThread, clazz, TRUE);
-		nestHost = clazz->nestHost;
+		nestHost = loadAndCheckNestHost(currentThread, clazz, TRUE);
 	}
-	if (NULL == nestHost) {
+	if (NULL != currentThread->currentException) {
 		goto _done;
 	}
 
@@ -2071,7 +2069,7 @@ Java_java_lang_Class_getNestMembersImpl(JNIEnv *env, jobject recv)
 				 * IncompatibleClassChangeError
 				 */
 				loadAndCheckNestHost(currentThread, nestMember, TRUE);
-				if (NULL == nestMember->nestHost) {
+				if (NULL != currentThread->currentException) {
 					goto _done;
 				}
 			}
