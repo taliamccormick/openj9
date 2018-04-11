@@ -1,0 +1,531 @@
+From 38c98c25e08c0b0b44cdc62f8d5c49f51e26a4c5 Thu, 15 Feb 2018 15:31:49 -0500
+From: Talia McCormick <Talia.McCormick@ibm.com>
+Date: Tue, 13 Feb 2018 11:14:32 -0500
+Subject: [PATCH] Moves nestmates host loading to visibility check
+
+
+Signed-off-by: Talia McCormick <Talia.McCormick@ibm.com>
+
+diff --git a/runtime/nls/j9vm/j9vm.nls b/runtime/nls/j9vm/j9vm.nls
+index 9ddacb1..64a3e1c 100644
+--- a/runtime/nls/j9vm/j9vm.nls
++++ b/runtime/nls/j9vm/j9vm.nls
+@@ -1782,3 +1782,14 @@
+ J9NLS_VM_LOADING_CONSTRAINT_OVERRIDE_VIOLATION.system_action=A java/lang/LinkageError will be thrown
+ J9NLS_VM_LOADING_CONSTRAINT_OVERRIDE_VIOLATION.user_response=Examine the use of ClassLoaders to determine why a class of the same name is loaded in two different loaders
+ # END NON-TRANSLATABLE
++
++# First argument is class name length
++# Second argument is class name
++# Third argument is nest host name length
++# Fourth argument is nest host name
++J9NLS_VM_NEST_HOST_FAILED_TO_LOAD=Class %2$.*1$s must be able to load its nest host %4$.*3$s.
++# START NON-TRANSLATABLE
++J9NLS_VM_NEST_HOST_FAILED_TO_LOAD.explanation=Class and nest host class were loaded with different class loaders.
++J9NLS_VM_NEST_HOST_FAILED_TO_LOAD.system_action=The JVM will throw a java/lang/VerifyError
++J9NLS_VM_NEST_HOST_FAILED_TO_LOAD.user_response=Load class and nest host class with same classloader.
++# END NON-TRANSLATABLE
+\ No newline at end of file
+diff --git a/runtime/oti/j9nonbuilder.h b/runtime/oti/j9nonbuilder.h
+index dfee289..d030997 100644
+--- a/runtime/oti/j9nonbuilder.h
++++ b/runtime/oti/j9nonbuilder.h
+@@ -328,6 +328,13 @@
+ #define J9_VISIBILITY_NON_MODULE_ACCESS_ERROR 0
+ #define J9_VISIBILITY_MODULE_READ_ACCESS_ERROR -1
+ #define J9_VISIBILITY_MODULE_PACKAGE_EXPORT_ERROR -2
++#if defined(J9VM_OPT_VALHALLA_NESTMATES)
++#define J9_VISIBILITY_NEST_HOST_LOADING_FAILURE_ERROR -3
++#define J9_VISIBILITY_NEST_HOST_DIFFERENT_CLASSLOADER_ERROR -4
++#define J9_VISIBILITY_NEST_HOST_DIFFERENT_PACKAGE_ERROR -5
++#define J9_VISIBILITY_NEST_MEMBER_NOT_CLAIMED_ERROR -6
++#endif /* defined(J9VM_OPT_VALHALLA_NESTMATES) */
++
+ /* @ddr_namespace: map_to_type=J9CfrError */
+ 
+ /* Jazz 82615: Both errorPC (current pc value) and errorFrameBCI (bci value in the stack map frame)
+diff --git a/runtime/vm/BytecodeInterpreter.hpp b/runtime/vm/BytecodeInterpreter.hpp
+index 0d0bc7e..fca2fe0 100644
+--- a/runtime/vm/BytecodeInterpreter.hpp
++++ b/runtime/vm/BytecodeInterpreter.hpp
+@@ -2956,7 +2956,18 @@
+ 				if (checkResult < J9_VISIBILITY_ALLOWED) {
+ 					char *nlsStr = illegalAccessMessage(_currentThread, -1, senderClass, j9clazz, checkResult);
+ 					/* VM struct is already up-to-date */
+-					setCurrentExceptionUTF(_currentThread, J9VMCONSTANTPOOL_JAVALANGILLEGALACCESSEXCEPTION, nlsStr);
++#if defined(J9VM_OPT_VALHALLA_NESTMATES)
++					if ((J9_VISIBILITY_NEST_HOST_LOADING_FAILURE_ERROR == checkResult)
++							|| (J9_VISIBILITY_NEST_HOST_DIFFERENT_CLASSLOADER_ERROR == checkResult)
++							|| (J9_VISIBILITY_NEST_HOST_DIFFERENT_PACKAGE_ERROR == checkResult)
++							|| (J9_VISIBILITY_NEST_MEMBER_NOT_CLAIMED_ERROR == checkResult)) {
++						setCurrentExceptionUTF(_currentThread, J9VMCONSTANTPOOL_JAVALANGVERIFYERROR, nlsStr);
++					} else {
++#endif /* J9VM_OPT_VALHALLA_NESTMATES */
++						setCurrentExceptionUTF(_currentThread, J9VMCONSTANTPOOL_JAVALANGILLEGALACCESSEXCEPTION, nlsStr);
++#if defined(J9VM_OPT_VALHALLA_NESTMATES)
++					}
++#endif /* J9VM_OPT_VALHALLA_NESTMATES */
+ 					VMStructHasBeenUpdated(REGISTER_ARGS);
+ 					PORT_ACCESS_FROM_JAVAVM(_vm);
+ 					j9mem_free_memory(nlsStr);
+diff --git a/runtime/vm/ClassInitialization.cpp b/runtime/vm/ClassInitialization.cpp
+index 27f2d5b..b58c9b7 100644
+--- a/runtime/vm/ClassInitialization.cpp
++++ b/runtime/vm/ClassInitialization.cpp
+@@ -61,9 +61,6 @@
+ 
+ static j9object_t setInitStatus(J9VMThread *currentThread, J9Class *clazz, UDATA status, j9object_t initializationLock);
+ static void classInitStateMachine(J9VMThread *currentThread, J9Class *clazz, J9ClassInitState desiredState);
+-#if defined(J9VM_OPT_VALHALLA_NESTMATES)
+-static bool verifyNestHost(J9Class *clazz, J9VMThread *vmThread);
+-#endif /* J9VM_OPT_VALHALLA_NESTMATES */
+ 
+ void
+ initializeImpl(J9VMThread *currentThread, J9Class *clazz)
+@@ -175,11 +172,7 @@
+ 					setCurrentException(currentThread, J9VMCONSTANTPOOL_JAVALANGVERIFYERROR, (UDATA*)verifyErrorStringObject);
+ 					goto done;
+ 				}
+-#if defined(J9VM_OPT_VALHALLA_NESTMATES)
+-				if (false == verifyNestHost(clazz, currentThread)) {
+-					goto done;
+-				}
+-#endif /* J9VM_OPT_VALHALLA_NESTMATES */
++
+ 				Trc_VM_verification_End(currentThread, J9UTF8_LENGTH(J9ROMCLASS_CLASSNAME(clazz->romClass)), J9UTF8_DATA(J9ROMCLASS_CLASSNAME(clazz->romClass)), clazz->classLoader);
+ 			} else {
+ 				Trc_VM_performVerification_unverifiable(currentThread);
+@@ -619,60 +612,4 @@
+ 	Trc_VM_classInitStateMachine_Exit(currentThread);
+ 	return;
+ }
+-
+-#if defined(J9VM_OPT_VALHALLA_NESTMATES)
+-static bool
+-verifyNestHost(J9Class *clazz, J9VMThread *vmThread)
+-{
+-	J9Class *nestHost = clazz->nestHost;
+-	bool verified = false;
+-
+-	/* Verification only needed if class's nest host is not itself */
+-	if (clazz == nestHost) {
+-		verified = true;
+-	} else {
+-		J9ROMClass *romClass = clazz->romClass;
+-		J9UTF8 *className = J9ROMCLASS_CLASSNAME(romClass);
+-		U_32 moduleName = 0;
+-		U_32 nlsNumber = 0;
+-
+-		/* Nest host must have same classloader & package */
+-		if (clazz->classLoader != nestHost->classLoader) {
+-			Trc_VM_CreateRAMClassFromROMClass_nestHostNotSameClassLoader(vmThread, nestHost, nestHost->classLoader, clazz->classLoader);
+-			moduleName = J9NLS_VM_NEST_HOST_HAS_DIFFERENT_CLASSLOADER__MODULE;
+-			nlsNumber = J9NLS_VM_NEST_HOST_HAS_DIFFERENT_CLASSLOADER__ID;
+-		} else if (clazz->packageID != nestHost->packageID) {
+-			Trc_VM_CreateRAMClassFromROMClass_nestHostNotSamePackage(vmThread, nestHost, nestHost->classLoader, clazz->classLoader);
+-			moduleName = J9NLS_VM_NEST_HOST_HAS_DIFFERENT_PACKAGE__MODULE;
+-			nlsNumber = J9NLS_VM_NEST_HOST_HAS_DIFFERENT_PACKAGE__ID;
+-		} else {
+-			/* The nest host must have a nestmembers attribute that includes this class. */
+-			J9SRP *nestMembers = J9ROMCLASS_NESTMEMBERS(nestHost->romClass);
+-			U_16 nestMemberCount = nestHost->romClass->nestMemberCount;
+-			for (U_16 i = 0; i < nestMemberCount; i++) {
+-				J9UTF8 *nestMemberName = NNSRP_GET(nestMembers[i], J9UTF8*);
+-				if (J9UTF8_EQUALS(className, nestMemberName)) {
+-					verified = true;
+-					break;
+-				}
+-			}
+-			if (!verified) {
+-				Trc_VM_CreateRAMClassFromROMClass_nestHostNotVerified(vmThread, nestHost, nestHost->classLoader, clazz->classLoader, className);
+-				moduleName = J9NLS_VM_NEST_MEMBER_NOT_CLAIMED_BY_NEST_HOST__MODULE;
+-				nlsNumber = J9NLS_VM_NEST_MEMBER_NOT_CLAIMED_BY_NEST_HOST__ID;
+-			}
+-		}
+-
+-		if (!verified) {
+-			J9UTF8 *nestHostName = J9ROMCLASS_NESTHOSTNAME(romClass);
+-			setCurrentExceptionNLSWithArgs(vmThread,
+-					moduleName, nlsNumber,
+-					J9VMCONSTANTPOOL_JAVALANGVERIFYERROR,
+-					J9UTF8_LENGTH(className),J9UTF8_DATA(className),
+-					J9UTF8_LENGTH(nestHostName), J9UTF8_DATA(className));
+-		}
+-	}
+-	return verified;
+-}
+-#endif /* J9VM_OPT_VALHALLA_NESTMATES */
+ } /* extern "C" */
+diff --git a/runtime/vm/createramclass.cpp b/runtime/vm/createramclass.cpp
+index 457e28d..617a1b9 100644
+--- a/runtime/vm/createramclass.cpp
++++ b/runtime/vm/createramclass.cpp
+@@ -143,9 +143,6 @@
+ static BOOLEAN verifyClassLoadingStack(J9VMThread *vmThread, J9ClassLoader *classLoader, J9ROMClass *romClass);
+ static void popFromClassLoadingStack(J9VMThread *vmThread);
+ static VMINLINE BOOLEAN loadSuperClassAndInterfaces(J9VMThread *vmThread, J9ClassLoader *classLoader, J9ROMClass *romClass, J9Class *elementClass, UDATA packageID, BOOLEAN hotswapping, UDATA classPreloadFlags, J9Class **superclassOut, J9Module *module);
+-#if defined(J9VM_OPT_VALHALLA_NESTMATES)
+-static J9Class *loadNestHost(J9VMThread *vmThread, J9ClassLoader *classLoader, J9UTF8 *nestHostName, UDATA classPreloadFlags);
+-#endif /* defined(J9VM_OPT_VALHALLA_NESTMATES) */
+ static J9Class* internalCreateRAMClassDropAndReturn(J9VMThread *vmThread, J9ROMClass *romClass, J9CreateRAMClassState *state);
+ static J9Class* internalCreateRAMClassDoneNoMutex(J9VMThread *vmThread, J9ROMClass *romClass, UDATA options, J9CreateRAMClassState *state);
+ static J9Class* internalCreateRAMClassDone(J9VMThread *vmThread, J9ClassLoader *classLoader, J9ROMClass *romClass, UDATA options, J9Class *elementClass,
+@@ -1596,16 +1593,6 @@
+ 	return TRUE;
+ }
+ 
+-#if defined(J9VM_OPT_VALHALLA_NESTMATES)
+-static J9Class *
+-loadNestHost(J9VMThread *vmThread, J9ClassLoader *classLoader, J9UTF8 *nestHostName, UDATA classPreloadFlags)
+-{
+-	J9Class *nestHost = internalFindClassUTF8(vmThread, J9UTF8_DATA(nestHostName), J9UTF8_LENGTH(nestHostName), classLoader, classPreloadFlags);
+-	Trc_VM_CreateRAMClassFromROMClass_nestHostLoaded(vmThread, J9UTF8_LENGTH(nestHostName), J9UTF8_DATA(nestHostName), nestHost);
+-	return nestHost;
+-}
+-#endif
+-
+ static J9Class*
+ internalCreateRAMClassDropAndReturn(J9VMThread *vmThread, J9ROMClass *romClass, J9CreateRAMClassState *state)
+ {
+@@ -2313,34 +2300,6 @@
+ 			} else {
+ 				ramClass->hostClass = ramClass;
+ 			}
+-
+-#if defined(J9VM_OPT_VALHALLA_NESTMATES)
+-			{
+-				J9Class *nestHost = NULL;
+-				J9UTF8 *nestHostName = J9ROMCLASS_NESTHOSTNAME(romClass);
+-
+-				/* If no nest host is named, class is own nest host */
+-				if (NULL == nestHostName) {
+-					nestHost = ramClass;
+-				} else {
+-					UDATA nestHostClassPreloadFlags = 0;
+-					if (hotswapping) {
+-						nestHostClassPreloadFlags = J9_FINDCLASS_FLAG_EXISTING_ONLY;
+-					} else {
+-						nestHostClassPreloadFlags = J9_FINDCLASS_FLAG_THROW_ON_FAIL;
+-						if (classLoader != javaVM->systemClassLoader) {
+-							nestHostClassPreloadFlags |= J9_FINDCLASS_FLAG_CHECK_PKG_ACCESS;
+-						}
+-					}
+-					nestHost = loadNestHost(vmThread, hostClassLoader, nestHostName, nestHostClassPreloadFlags);
+-				}
+-				/* If nest host loading failed, an exception has been set; end loading early */
+-				if (NULL == nestHost) {
+-					return internalCreateRAMClassDone(vmThread, classLoader, romClass, options, elementClass, className, state);
+-				}
+-				ramClass->nestHost = nestHost;
+-			}
+-#endif /* defined(J9VM_OPT_VALHALLA_NESTMATES) */
+ 
+ 			/* Initialize the methods. */
+ 			if (romClass->romMethodCount != 0) {
+diff --git a/runtime/vm/lookupmethod.c b/runtime/vm/lookupmethod.c
+index 64f01ca..24ae545 100644
+--- a/runtime/vm/lookupmethod.c
++++ b/runtime/vm/lookupmethod.c
+@@ -202,7 +202,18 @@
+ 		if (doVisibilityCheck) {
+ 			IDATA checkResult = checkVisibility(currentThread, senderClass, methodClass, newModifiers, lookupOptions);
+ 			if (checkResult < J9_VISIBILITY_ALLOWED) {
+-				*exception = J9VMCONSTANTPOOL_JAVALANGILLEGALACCESSERROR;
++#if defined(J9VM_OPT_VALHALLA_NESTMATES)
++				if ((J9_VISIBILITY_NEST_HOST_LOADING_FAILURE_ERROR == checkResult)
++						|| (J9_VISIBILITY_NEST_HOST_DIFFERENT_CLASSLOADER_ERROR == checkResult)
++						|| (J9_VISIBILITY_NEST_HOST_DIFFERENT_PACKAGE_ERROR == checkResult)
++						|| (J9_VISIBILITY_NEST_MEMBER_NOT_CLAIMED_ERROR == checkResult)) {
++					*exception = J9VMCONSTANTPOOL_JAVALANGVERIFYERROR;
++				} else {
++#endif /* J9VM_OPT_VALHALLA_NESTMATES */
++					*exception = J9VMCONSTANTPOOL_JAVALANGILLEGALACCESSERROR;
++#if defined(J9VM_OPT_VALHALLA_NESTMATES)
++				}
++#endif /* J9VM_OPT_VALHALLA_NESTMATES */
+ 				*exceptionClass = methodClass;
+ 				*errorType = checkResult;
+ 				return NULL;
+@@ -1031,10 +1042,75 @@
+ 	char *destModuleMsg = NULL;
+ 	char packageNameBuf[J9VM_PACKAGE_NAME_BUFFER_LENGTH];
+ 	char *packageNameMsg = NULL;
++#if defined(J9VM_OPT_VALHALLA_NESTMATES)
++	J9Class *unverifiedNestMemberClass = NULL;
++#endif /* J9VM_OPT_VALHALLA_NESTMATES */
+ 	
+ 	PORT_ACCESS_FROM_VMC(currentThread);
+ 	Trc_VM_illegalAccessMessage_Entry(currentThread, J9UTF8_LENGTH(senderClassNameUTF), J9UTF8_DATA(senderClassNameUTF),
+ 			J9UTF8_LENGTH(targetClassNameUTF), J9UTF8_DATA(targetClassNameUTF), badMemberModifier);
++
++#if defined(J9VM_OPT_VALHALLA_NESTMATES)
++	/* If a problem arises when loading a nestmates nest host, then last bit is masked with a 1 */
++	if (1 != ((UDATA)senderClass->nestHost & 1)) {
++		unverifiedNestMemberClass = senderClass;
++	} else if (1 != ((UDATA)targetClass->nestHost & 1)) {
++		unverifiedNestMemberClass = targetClass;
++	}
++
++	/* If an issue with the nest host loading and verification occurred, then it will be one of:
++	 * 		J9_VISIBILITY_NEST_HOST_LOADING_FAILURE_ERROR
++	 * 		J9_VISIBILITY_NEST_HOST_DIFFERENT_CLASSLOADER_ERROR
++	 * 		J9_VISIBILITY_NEST_HOST_DIFFERENT_PACKAGE_ERROR
++	 * 		J9_VISIBILITY_NEST_MEMBER_NOT_CLAIMED_ERROR
++	 * Otherwise, it is one of:
++	 * 		J9_VISIBILITY_NON_MODULE_ACCESS_ERROR
++	 * 		J9_VISIBILITY_MODULE_READ_ACCESS_ERROR
++	 * 		J9_VISIBILITY_MODULE_PACKAGE_EXPORT_ERROR
++	 */
++	if (NULL != unverifiedNestMemberClass) {
++		J9Class *nestHostClass = (J9Class *)(((UDATA)unverifiedNestMemberClass->nestHost) & ((UDATA)(~1)));
++		J9UTF8 *nestMemberNameUTF = J9ROMCLASS_CLASSNAME(unverifiedNestMemberClass->romClass);
++		J9UTF8 *nestHostNameUTF = J9ROMCLASS_NESTHOSTNAME(nestHostClass->romClass);
++
++		if (J9_VISIBILITY_NEST_HOST_LOADING_FAILURE_ERROR == errorType) {
++			errorMsg = j9nls_lookup_message(J9NLS_DO_NOT_PRINT_MESSAGE_TAG | J9NLS_DO_NOT_APPEND_NEWLINE,
++					J9NLS_VM_NEST_HOST_FAILED_TO_LOAD,
++					NULL);
++		} else if (J9_VISIBILITY_NEST_HOST_DIFFERENT_CLASSLOADER_ERROR == errorType) {
++			errorMsg = j9nls_lookup_message(J9NLS_DO_NOT_PRINT_MESSAGE_TAG | J9NLS_DO_NOT_APPEND_NEWLINE,
++					J9NLS_VM_NEST_HOST_HAS_DIFFERENT_CLASSLOADER,
++					NULL);
++		} else if (J9_VISIBILITY_NEST_HOST_DIFFERENT_PACKAGE_ERROR == errorType) {
++			errorMsg = j9nls_lookup_message(J9NLS_DO_NOT_PRINT_MESSAGE_TAG | J9NLS_DO_NOT_APPEND_NEWLINE,
++					J9NLS_VM_NEST_HOST_HAS_DIFFERENT_PACKAGE,
++					NULL);
++		} else if (J9_VISIBILITY_NEST_MEMBER_NOT_CLAIMED_ERROR == errorType) {
++			errorMsg = j9nls_lookup_message(J9NLS_DO_NOT_PRINT_MESSAGE_TAG | J9NLS_DO_NOT_APPEND_NEWLINE,
++					J9NLS_VM_NEST_MEMBER_NOT_CLAIMED_BY_NEST_HOST,
++					NULL);
++		}
++
++		bufLen = j9str_printf(PORTLIB, NULL, 0, errorMsg,
++				J9UTF8_LENGTH(nestMemberNameUTF),
++				J9UTF8_DATA(nestMemberNameUTF),
++				J9UTF8_LENGTH(nestHostNameUTF),
++				J9UTF8_DATA(nestHostNameUTF));
++
++		if (bufLen > 0) {
++			buf = j9mem_allocate_memory(bufLen, OMRMEM_CATEGORY_VM);
++			if (NULL != buf) {
++				j9str_printf(PORTLIB, buf, bufLen, errorMsg,
++						J9UTF8_LENGTH(nestMemberNameUTF),
++						J9UTF8_DATA(nestMemberNameUTF),
++						J9UTF8_LENGTH(nestHostNameUTF),
++						J9UTF8_DATA(nestHostNameUTF));
++			} else {
++				goto allocationFailure;
++			}
++		}
++	} else
++#endif /* defined(J9VM_OPT_VALHALLA_NESTMATES) */
+ 	if (J9_VISIBILITY_NON_MODULE_ACCESS_ERROR != errorType) {
+ 		/* illegal module access */
+ 		j9object_t srcModuleObject = J9VMJAVALANGCLASS_MODULE(currentThread, senderClass->classObject);
+diff --git a/runtime/vm/resolvefield.cpp b/runtime/vm/resolvefield.cpp
+index b0f6e04..b026a41 100644
+--- a/runtime/vm/resolvefield.cpp
++++ b/runtime/vm/resolvefield.cpp
+@@ -331,7 +331,18 @@
+ 					errorMsg = illegalAccessMessage(vmStruct, -1, sourceClass, defClass, checkResult);
+ 				}
+ 				PORT_ACCESS_FROM_VMC(vmStruct);
+-				setCurrentExceptionUTF(vmStruct, J9VMCONSTANTPOOL_JAVALANGILLEGALACCESSERROR, errorMsg);
++#if defined(J9VM_OPT_VALHALLA_NESTMATES)
++					if ((J9_VISIBILITY_NEST_HOST_LOADING_FAILURE_ERROR == checkResult)
++							|| (J9_VISIBILITY_NEST_HOST_DIFFERENT_CLASSLOADER_ERROR == checkResult)
++							|| (J9_VISIBILITY_NEST_HOST_DIFFERENT_PACKAGE_ERROR == checkResult)
++							|| (J9_VISIBILITY_NEST_MEMBER_NOT_CLAIMED_ERROR == checkResult)) {
++						setCurrentExceptionUTF(vmStruct, J9VMCONSTANTPOOL_JAVALANGVERIFYERROR, errorMsg);
++					} else {
++#endif /* J9VM_OPT_VALHALLA_NESTMATES */
++						setCurrentExceptionUTF(vmStruct, J9VMCONSTANTPOOL_JAVALANGILLEGALACCESSERROR, errorMsg);
++#if defined(J9VM_OPT_VALHALLA_NESTMATES)
++					}
++#endif /* J9VM_OPT_VALHALLA_NESTMATES */
+ 				j9mem_free_memory(errorMsg);
+ 			}
+ 			field = NULL;
+diff --git a/runtime/vm/resolvesupport.cpp b/runtime/vm/resolvesupport.cpp
+index c901ca1..76b2619 100644
+--- a/runtime/vm/resolvesupport.cpp
++++ b/runtime/vm/resolvesupport.cpp
+@@ -428,7 +428,18 @@
+ 				} else {
+ 					errorMsg = illegalAccessMessage(vmStruct, -1, J9_CLASS_FROM_CP(ramCP), accessClass, checkResult);
+ 				}
+-				setCurrentExceptionUTF(vmStruct, J9VMCONSTANTPOOL_JAVALANGILLEGALACCESSERROR, errorMsg);
++#if defined(J9VM_OPT_VALHALLA_NESTMATES)
++				if ((J9_VISIBILITY_NEST_HOST_LOADING_FAILURE_ERROR == checkResult)
++						|| (J9_VISIBILITY_NEST_HOST_DIFFERENT_CLASSLOADER_ERROR == checkResult)
++						|| (J9_VISIBILITY_NEST_HOST_DIFFERENT_PACKAGE_ERROR == checkResult)
++						|| (J9_VISIBILITY_NEST_MEMBER_NOT_CLAIMED_ERROR == checkResult)) {
++					setCurrentExceptionUTF(vmStruct, J9VMCONSTANTPOOL_JAVALANGVERIFYERROR, errorMsg);
++				} else {
++#endif /* J9VM_OPT_VALHALLA_NESTMATES */
++					setCurrentExceptionUTF(vmStruct, J9VMCONSTANTPOOL_JAVALANGILLEGALACCESSERROR, errorMsg);
++#if defined(J9VM_OPT_VALHALLA_NESTMATES)
++				}
++#endif /* J9VM_OPT_VALHALLA_NESTMATES */
+ 				j9mem_free_memory(errorMsg);
+ 			}
+ 			goto bail;
+@@ -751,8 +762,19 @@
+ 						} else {
+ 							errorMsg = illegalAccessMessage(vmStruct, -1, classFromCP, targetClass, checkResult);
+ 						}
+-						setCurrentExceptionUTF(vmStruct, J9VMCONSTANTPOOL_JAVALANGILLEGALACCESSERROR, errorMsg);
+-						j9mem_free_memory(errorMsg);
++#if defined(J9VM_OPT_VALHALLA_NESTMATES)
++						if ((J9_VISIBILITY_NEST_HOST_LOADING_FAILURE_ERROR == checkResult)
++								|| (J9_VISIBILITY_NEST_HOST_DIFFERENT_CLASSLOADER_ERROR == checkResult)
++								|| (J9_VISIBILITY_NEST_HOST_DIFFERENT_PACKAGE_ERROR == checkResult)
++								|| (J9_VISIBILITY_NEST_MEMBER_NOT_CLAIMED_ERROR == checkResult)) {
++							setCurrentExceptionUTF(vmStruct, J9VMCONSTANTPOOL_JAVALANGVERIFYERROR, errorMsg);
++						} else {
++#endif /* J9VM_OPT_VALHALLA_NESTMATES */
++							setCurrentExceptionUTF(vmStruct, J9VMCONSTANTPOOL_JAVALANGILLEGALACCESSERROR, errorMsg);
++#if defined(J9VM_OPT_VALHALLA_NESTMATES)
++						}
++#endif /* J9VM_OPT_VALHALLA_NESTMATES */
++					j9mem_free_memory(errorMsg);
+ 					}
+ 					goto done;
+ 				}
+@@ -949,7 +971,18 @@
+ 						} else {
+ 							nlsStr = illegalAccessMessage(vmStruct, -1, classFromCP, targetClass, checkResult);
+ 						}
+-						setCurrentExceptionUTF(vmStruct, J9VMCONSTANTPOOL_JAVALANGILLEGALACCESSERROR, nlsStr);
++#if defined(J9VM_OPT_VALHALLA_NESTMATES)
++						if ((J9_VISIBILITY_NEST_HOST_LOADING_FAILURE_ERROR == checkResult)
++								|| (J9_VISIBILITY_NEST_HOST_DIFFERENT_CLASSLOADER_ERROR == checkResult)
++								|| (J9_VISIBILITY_NEST_HOST_DIFFERENT_PACKAGE_ERROR == checkResult)
++								|| (J9_VISIBILITY_NEST_MEMBER_NOT_CLAIMED_ERROR == checkResult)) {
++							setCurrentExceptionUTF(vmStruct, J9VMCONSTANTPOOL_JAVALANGVERIFYERROR, nlsStr);
++						} else {
++#endif /* J9VM_OPT_VALHALLA_NESTMATES */
++							setCurrentExceptionUTF(vmStruct, J9VMCONSTANTPOOL_JAVALANGILLEGALACCESSERROR, nlsStr);
++#if defined(J9VM_OPT_VALHALLA_NESTMATES)
++						}
++#endif /* J9VM_OPT_VALHALLA_NESTMATES */
+ 						j9mem_free_memory(nlsStr);
+ 					}
+ 					goto done;
+@@ -1659,7 +1692,18 @@
+ 			if (NULL == errorMsg) {
+ 				setNativeOutOfMemoryError(vmThread, 0, 0);
+ 			} else {
+-				setCurrentExceptionUTF(vmThread, J9VMCONSTANTPOOL_JAVALANGILLEGALACCESSERROR, errorMsg);
++#if defined(J9VM_OPT_VALHALLA_NESTMATES)
++				if ((J9_VISIBILITY_NEST_HOST_LOADING_FAILURE_ERROR == visibilityReturnCode)
++						|| (J9_VISIBILITY_NEST_HOST_DIFFERENT_CLASSLOADER_ERROR == visibilityReturnCode)
++						|| (J9_VISIBILITY_NEST_HOST_DIFFERENT_PACKAGE_ERROR == visibilityReturnCode)
++						|| (J9_VISIBILITY_NEST_MEMBER_NOT_CLAIMED_ERROR == visibilityReturnCode)) {
++					setCurrentExceptionUTF(vmThread, J9VMCONSTANTPOOL_JAVALANGVERIFYERROR, errorMsg);
++				} else {
++#endif /* J9VM_OPT_VALHALLA_NESTMATES */
++					setCurrentExceptionUTF(vmThread, J9VMCONSTANTPOOL_JAVALANGILLEGALACCESSERROR, errorMsg);
++#if defined(J9VM_OPT_VALHALLA_NESTMATES)
++				}
++#endif /* J9VM_OPT_VALHALLA_NESTMATES */
+ 			}
+ 			Trc_VM_sendResolveMethodTypeRefInto_Exception(vmThread, senderClass, illegalClass, visibilityReturnCode);
+ 			methodType = NULL;
+diff --git a/runtime/vm/visible.c b/runtime/vm/visible.c
+index d89e46c..eb17c64 100644
+--- a/runtime/vm/visible.c
++++ b/runtime/vm/visible.c
+@@ -29,6 +29,10 @@
+ #include "util_api.h"
+ #include "vm_internal.h"
+ 
++#if defined(J9VM_OPT_VALHALLA_NESTMATES)
++static VMINLINE UDATA loadAndVerifyNestHost(J9VMThread *vmThread, J9Class *clazz);
++#endif /* defined(J9VM_OPT_VALHALLA_NESTMATES) */
++
+ /**
+  * Check visibility from sourceClass to destClass with modifiers specified
+  *
+@@ -100,12 +104,21 @@
+ 			}
+ 		} else if (modifiers & J9AccPrivate) {
+ 			/* Private */
+-			if ((sourceClass != destClass)
++			if (sourceClass != destClass) {
+ #if defined(J9VM_OPT_VALHALLA_NESTMATES)
+-					&& (sourceClass->nestHost != destClass->nestHost)
++				/* loadAndVerifyNestHost returns an error if setting nest host field fails */
++				if (NULL == sourceClass->nestHost) {
++					result = loadAndVerifyNestHost(currentThread, sourceClass);
++				}
++				if ((J9_VISIBILITY_ALLOWED == result) && (NULL == destClass->nestHost)) {
++					result = loadAndVerifyNestHost(currentThread, destClass);
++				}
++				if ((J9_VISIBILITY_ALLOWED == result) && (sourceClass->nestHost != destClass->nestHost)) {
+ #endif /* defined(J9VM_OPT_VALHALLA_NESTMATES) */
+-			) {
+-				result = J9_VISIBILITY_NON_MODULE_ACCESS_ERROR;
++					result = J9_VISIBILITY_NON_MODULE_ACCESS_ERROR;
++#if defined(J9VM_OPT_VALHALLA_NESTMATES)
++				}
++#endif /* defined(J9VM_OPT_VALHALLA_NESTMATES) */
+ 			}
+ 		} else if (modifiers & J9AccProtected) {
+ 			/* Protected */
+@@ -142,3 +155,55 @@
+ 
+ 	return result;
+ }
++
++#if defined(J9VM_OPT_VALHALLA_NESTMATES)
++static VMINLINE UDATA loadAndVerifyNestHost(J9VMThread *vmThread, J9Class *clazz) {
++	J9Class *nestHost = NULL;
++	UDATA result = J9_VISIBILITY_ALLOWED;
++	J9ROMClass *romClass = clazz->romClass;
++	J9UTF8 *nestHostName = J9ROMCLASS_NESTHOSTNAME(romClass);
++
++	/* If no nest host is named, class is own nest host */
++	if (NULL == nestHostName) {
++		nestHost = clazz;
++	} else {
++		UDATA classLoadingFlags = J9_FINDCLASS_FLAG_THROW_ON_FAIL;
++		nestHost = vmThread->javaVM->internalVMFunctions->internalFindClassUTF8(vmThread, J9UTF8_DATA(nestHostName), J9UTF8_LENGTH(nestHostName), clazz->classLoader, classLoadingFlags);
++
++		/* Nest host must successfully loaded by the same classloader in the same package & verify the nest member */
++		if (NULL == nestHost) {
++			result = J9_VISIBILITY_NEST_HOST_LOADING_FAILURE_ERROR;
++		} else if (clazz->classLoader != nestHost->classLoader) {
++			result = J9_VISIBILITY_NEST_HOST_DIFFERENT_CLASSLOADER_ERROR;
++		} else if (clazz->packageID != nestHost->packageID) {
++			result = J9_VISIBILITY_NEST_HOST_DIFFERENT_PACKAGE_ERROR;
++		} else {
++			/* The nest host must have a nestmembers attribute that claims this class. */
++			BOOLEAN verified = FALSE;
++			J9UTF8 *className = J9ROMCLASS_CLASSNAME(romClass);
++			J9SRP *nestMembers = J9ROMCLASS_NESTMEMBERS(nestHost->romClass);
++			U_16 nestMemberCount = romClass->nestMemberCount;
++			U_16 i = 0;
++
++			for (i = 0; i < nestMemberCount; i++) {
++				J9UTF8 *nestMemberName = NNSRP_GET(nestMembers[i], J9UTF8*);
++				if (J9UTF8_EQUALS(className, nestMemberName)) {
++					verified = TRUE;
++					break;
++				}
++			}
++			if (!verified) {
++				result = J9_VISIBILITY_NEST_MEMBER_NOT_CLAIMED_ERROR;
++			}
++		}
++
++		/* If any problem occurred in nest host verification, mask 0th bit */
++		if (J9_VISIBILITY_ALLOWED != result) {
++		nestHost = (J9Class*)((UDATA)nestHost | 1);
++		}
++	}
++
++	clazz->nestHost = nestHost;
++	return result;
++}
++#endif /* defined(J9VM_OPT_VALHALLA_NESTMATES) */
