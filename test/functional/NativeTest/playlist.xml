@@ -38,12 +38,6 @@
 		<groups>
 			<group>functional</group>
 		</groups>
-		<subsets>
-			<subset>SE80</subset>
-			<subset>SE90</subset>
-			<subset>SE100</subset>
-			<subset>SE110</subset>
-		</subsets>
 	</test>
 	<test>
 		<testCaseName>ctest</testCaseName>
@@ -59,12 +53,6 @@
 		<groups>
 			<group>functional</group>
 		</groups>
-		<subsets>
-			<subset>SE80</subset>
-			<subset>SE90</subset>
-			<subset>SE100</subset>
-			<subset>SE110</subset>
-		</subsets>
 	</test>
 	<test>
 		<testCaseName>jniargtests</testCaseName>
@@ -80,12 +68,6 @@
 		<groups>
 			<group>functional</group>
 		</groups>
-		<subsets>
-			<subset>SE80</subset>
-			<subset>SE90</subset>
-			<subset>SE100</subset>
-			<subset>SE110</subset>
-		</subsets>
 	</test>
 	<test>
 		<testCaseName>vmtest</testCaseName>
@@ -101,12 +83,6 @@
 		<groups>
 			<group>functional</group>
 		</groups>
-		<subsets>
-			<subset>SE80</subset>
-			<subset>SE90</subset>
-			<subset>SE100</subset>
-			<subset>SE110</subset>
-		</subsets>
 	</test>
 	<test>
 		<testCaseName>jsigjnitest</testCaseName>
@@ -123,12 +99,6 @@
 		<groups>
 			<group>functional</group>
 		</groups>
-		<subsets>
-			<subset>SE80</subset>
-			<subset>SE90</subset>
-			<subset>SE100</subset>
-			<subset>SE110</subset>
-		</subsets>
 	</test>
 	<test>
 		<testCaseName>gc_rwlocktest</testCaseName>
@@ -146,12 +116,6 @@
 		<groups>
 			<group>functional</group>
 		</groups>
-		<subsets>
-			<subset>SE80</subset>
-			<subset>SE90</subset>
-			<subset>SE100</subset>
-			<subset>SE110</subset>
-		</subsets>
 	</test>
 	<test>
 		<testCaseName>gc_rwlocktest_win</testCaseName>
@@ -168,12 +132,6 @@
 		<groups>
 			<group>functional</group>
 		</groups>
-		<subsets>
-			<subset>SE80</subset>
-			<subset>SE90</subset>
-			<subset>SE100</subset>
-			<subset>SE110</subset>
-		</subsets>
 	</test>
 	<test>
 		<testCaseName>shrtest_linux</testCaseName>
@@ -364,12 +322,6 @@
 		<groups>
 			<group>functional</group>
 		</groups>
-		<subsets>
-			<subset>SE80</subset>
-			<subset>SE90</subset>
-			<subset>SE100</subset>
-			<subset>SE110</subset>
-		</subsets>
 	</test>
 	<test>
 		<testCaseName>vmLifecyleTests</testCaseName>
@@ -390,11 +342,5 @@
 		<groups>
 			<group>functional</group>
 		</groups>
-		<subsets>
-			<subset>SE80</subset>
-			<subset>SE90</subset>
-			<subset>SE100</subset>
-			<subset>SE110</subset>
-		</subsets>
 	</test>
 </playlist>

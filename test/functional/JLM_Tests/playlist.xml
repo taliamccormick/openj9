@@ -229,12 +229,6 @@
 		<groups>
 			<group>functional</group>
 		</groups>
-		<subsets>
-			<subset>SE80</subset>
-			<subset>SE90</subset>
-			<subset>SE100</subset>
-			<subset>SE110</subset>
-		</subsets>
 	</test>
 
 	<test>
@@ -261,12 +255,6 @@
 		<groups>
 			<group>functional</group>
 		</groups>
-		<subsets>
-			<subset>SE80</subset>
-			<subset>SE90</subset>
-			<subset>SE100</subset>
-			<subset>SE110</subset>
-		</subsets>
 	</test>
 
 	<test>
@@ -293,12 +281,6 @@
 		<groups>
 			<group>functional</group>
 		</groups>
-		<subsets>
-			<subset>SE80</subset>
-			<subset>SE90</subset>
-			<subset>SE100</subset>
-			<subset>SE110</subset>
-		</subsets>
 	</test>
 
 	<test>
@@ -324,12 +306,6 @@
 		<groups>
 			<group>functional</group>
 		</groups>
-		<subsets>
-			<subset>SE80</subset>
-			<subset>SE90</subset>
-			<subset>SE100</subset>
-			<subset>SE110</subset>
-		</subsets>
 	</test>
 
 	<test>
@@ -355,12 +331,6 @@
 		<groups>
 			<group>functional</group>
 		</groups>
-		<subsets>
-			<subset>SE80</subset>
-			<subset>SE90</subset>
-			<subset>SE100</subset>
-			<subset>SE110</subset>
-		</subsets>
 	</test>
 
 	<test>
@@ -387,12 +357,6 @@
 		<groups>
 			<group>functional</group>
 		</groups>
-		<subsets>
-			<subset>SE80</subset>
-			<subset>SE90</subset>
-			<subset>SE100</subset>
-			<subset>SE110</subset>
-		</subsets>
 	</test>
 
 	<test>
@@ -422,12 +386,6 @@
 		<tags>
 			<tag>test:largepages</tag>
 		</tags>
-		<subsets>
-			<subset>SE80</subset>
-			<subset>SE90</subset>
-			<subset>SE100</subset>
-			<subset>SE110</subset>
-		</subsets>
 	</test>
 
 	<test>
@@ -454,12 +412,6 @@
 		<groups>
 			<group>functional</group>
 		</groups>
-		<subsets>
-			<subset>SE80</subset>
-			<subset>SE90</subset>
-			<subset>SE100</subset>
-			<subset>SE110</subset>
-		</subsets>
 		<disabled>https://github.com/eclipse/openj9/issues/480</disabled>
 	</test>
 
@@ -487,12 +439,6 @@
 		<groups>
 			<group>functional</group>
 		</groups>
-		<subsets>
-			<subset>SE80</subset>
-			<subset>SE90</subset>
-			<subset>SE100</subset>
-			<subset>SE110</subset>
-		</subsets>
 		<disabled>https://github.com/eclipse/openj9/issues/480</disabled>
 	</test>
 
@@ -520,12 +466,6 @@
 		<groups>
 			<group>functional</group>
 		</groups>
-		<subsets>
-			<subset>SE80</subset>
-			<subset>SE90</subset>
-			<subset>SE100</subset>
-			<subset>SE110</subset>
-		</subsets>
 		<disabled>https://github.com/eclipse/openj9/issues/480</disabled>
 	</test>
 
@@ -553,12 +493,6 @@
 		<groups>
 			<group>functional</group>
 		</groups>
-		<subsets>
-			<subset>SE80</subset>
-			<subset>SE90</subset>
-			<subset>SE100</subset>
-			<subset>SE110</subset>
-		</subsets>
 		<disabled>https://github.com/eclipse/openj9/issues/480</disabled>
 	</test>
 
@@ -589,12 +523,6 @@
 		<tags>
 			<tag>test:largepages</tag>
 		</tags>
-		<subsets>
-			<subset>SE80</subset>
-			<subset>SE90</subset>
-			<subset>SE100</subset>
-			<subset>SE110</subset>
-		</subsets>
 		<disabled>https://github.com/eclipse/openj9/issues/480</disabled>
 	</test>
 
@@ -622,12 +550,6 @@
 		<groups>
 			<group>functional</group>
 		</groups>
-		<subsets>
-			<subset>SE80</subset>
-			<subset>SE90</subset>
-			<subset>SE100</subset>
-			<subset>SE110</subset>
-		</subsets>
 	</test>
 
 	<test>
@@ -654,12 +576,6 @@
 		<groups>
 			<group>functional</group>
 		</groups>
-		<subsets>
-			<subset>SE80</subset>
-			<subset>SE90</subset>
-			<subset>SE100</subset>
-			<subset>SE110</subset>
-		</subsets>
 	</test>
 
 	<test>
@@ -686,12 +602,6 @@
 		<groups>
 			<group>functional</group>
 		</groups>
-		<subsets>
-			<subset>SE80</subset>
-			<subset>SE90</subset>
-			<subset>SE100</subset>
-			<subset>SE110</subset>
-		</subsets>
 	</test>
 
 	<test>
@@ -718,12 +628,6 @@
 		<groups>
 			<group>functional</group>
 		</groups>
-		<subsets>
-			<subset>SE80</subset>
-			<subset>SE90</subset>
-			<subset>SE100</subset>
-			<subset>SE110</subset>
-		</subsets>
 	</test>
 
 	<test>
@@ -753,12 +657,6 @@
 		<tags>
 			<tag>test:largepages</tag>
 		</tags>
-		<subsets>
-			<subset>SE80</subset>
-			<subset>SE90</subset>
-			<subset>SE100</subset>
-			<subset>SE110</subset>
-		</subsets>
 	</test>
 
 	<test>
@@ -785,12 +683,6 @@
 		<groups>
 			<group>functional</group>
 		</groups>
-		<subsets>
-			<subset>SE80</subset>
-			<subset>SE90</subset>
-			<subset>SE100</subset>
-			<subset>SE110</subset>
-		</subsets>
 	</test>
 
 	<test>
@@ -817,12 +709,6 @@
 		<groups>
 			<group>functional</group>
 		</groups>
-		<subsets>
-			<subset>SE80</subset>
-			<subset>SE90</subset>
-			<subset>SE100</subset>
-			<subset>SE110</subset>
-		</subsets>
 	</test>
 
 	<test>
@@ -849,12 +735,6 @@
 		<groups>
 			<group>functional</group>
 		</groups>
-		<subsets>
-			<subset>SE80</subset>
-			<subset>SE90</subset>
-			<subset>SE100</subset>
-			<subset>SE110</subset>
-		</subsets>
 	</test>
 
 	<test>
@@ -881,12 +761,6 @@
 		<groups>
 			<group>functional</group>
 		</groups>
-		<subsets>
-			<subset>SE80</subset>
-			<subset>SE90</subset>
-			<subset>SE100</subset>
-			<subset>SE110</subset>
-		</subsets>
 	</test>
 	<test>
 		<testCaseName>testDefaultDisclaimMemory_zlinux</testCaseName>
@@ -912,12 +786,6 @@
 		<groups>
 			<group>functional</group>
 		</groups>
-		<subsets>
-			<subset>SE80</subset>
-			<subset>SE90</subset>
-			<subset>SE100</subset>
-			<subset>SE110</subset>
-		</subsets>
 	</test>
 
 	<test>
@@ -944,12 +812,6 @@
 		<groups>
 			<group>functional</group>
 		</groups>
-		<subsets>
-			<subset>SE80</subset>
-			<subset>SE90</subset>
-			<subset>SE100</subset>
-			<subset>SE110</subset>
-		</subsets>
 	</test>
 
 	<test>
@@ -973,12 +835,6 @@
 		<groups>
 			<group>functional</group>
 		</groups>
-		<subsets>
-			<subset>SE80</subset>
-			<subset>SE90</subset>
-			<subset>SE100</subset>
-			<subset>SE110</subset>
-		</subsets>
 	</test>
 
 	<test>
@@ -1003,12 +859,6 @@
 		<groups>
 			<group>functional</group>
 		</groups>
-		<subsets>
-			<subset>SE80</subset>
-			<subset>SE90</subset>
-			<subset>SE100</subset>
-			<subset>SE110</subset>
-		</subsets>
 	</test>
 
 	<test>
@@ -1171,12 +1021,6 @@
 		<groups>
 			<group>functional</group>
 		</groups>
-		<subsets>
-			<subset>SE80</subset>
-			<subset>SE90</subset>
-			<subset>SE100</subset>
-			<subset>SE110</subset>
-		</subsets>
 	</test>
 
 	<test>
@@ -1201,12 +1045,6 @@
 		<groups>
 			<group>functional</group>
 		</groups>
-		<subsets>
-			<subset>SE80</subset>
-			<subset>SE90</subset>
-			<subset>SE100</subset>
-			<subset>SE110</subset>
-		</subsets>
 	</test>
 
 	<test>
@@ -1228,12 +1066,6 @@
 		<groups>
 			<group>functional</group>
 		</groups>
-		<subsets>
-			<subset>SE80</subset>
-			<subset>SE90</subset>
-			<subset>SE100</subset>
-			<subset>SE110</subset>
-		</subsets>
 	</test>
 
 	<test>
@@ -1255,12 +1087,6 @@
 		<groups>
 			<group>functional</group>
 		</groups>
-		<subsets>
-			<subset>SE80</subset>
-			<subset>SE90</subset>
-			<subset>SE100</subset>
-			<subset>SE110</subset>
-		</subsets>
 	</test>
 
 	<test>
@@ -1286,12 +1112,6 @@
 		<groups>
 			<group>functional</group>
 		</groups>
-		<subsets>
-			<subset>SE80</subset>
-			<subset>SE90</subset>
-			<subset>SE100</subset>
-			<subset>SE110</subset>
-		</subsets>
 	</test>
 
 </playlist>
