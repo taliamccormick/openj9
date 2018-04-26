@@ -43,8 +43,8 @@
 			<equals arg1="${JAVA_VERSION}" arg2="Panama"/>
 			<then>
 				<subant target="">
-					<fileset dir="./">
-						<include name="Panama/build.xml" />
+					<fileset dir="." includes="*/build.xml" >
+						<exclude name="Panama/build.xml" />
 					</fileset>
 				</subant>
 			</then>
@@ -52,8 +52,8 @@
 				<equals arg1="${JAVA_VERSION}" arg2="Valhalla"/>
 				<then>
 					<subant target="">
-						<fileset dir="./">
-							<include name="Valhalla/build.xml" />
+						<fileset dir="." includes="*/build.xml" >
+							<exclude name="Panama/build.xml" />
 						</fileset>
 					</subant>
 				</then>
