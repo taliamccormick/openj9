@@ -41,6 +41,7 @@ This folder contains Jenkins pipeline scripts that are used in the OpenJ9 Jenkin
     - Java Versions: jdk8,jdk9,jdk10
 - Note: You can use keyword `all` for level, platform or version
 
+
 ###### Examples
 - Request a Compile-only build on all platforms and all java versions by commenting in a PR
     - `Jenkins compile`
@@ -77,6 +78,11 @@ You can also request a Pull Request build from the extensions repos or openj9-om
     - `Jenkins test sanity all jdk9 depends eclipse/omr#123 ibmruntimes/openj9-openjdk-jdk9#789`
 - Ex. If you have a dependent change and only want one platform, depends comes last
     - `Jenkins test sanity zlinux all depends eclipse/omr#123`
+
+##### Special Pull Requests builds
+
+- To trigger a Valhalla Nestmates PR build:
+   - `Jenkins test sanity plinux jdk11-nestmates`
 
 ##### Other Pull Requests builds
 
@@ -158,6 +164,14 @@ You can also request a Pull Request build from the extensions repos or openj9-om
     - [![Build Status](https://ci.eclipse.org/openj9/buildStatus/icon?job=Build-JDK10-linux_ppc-64_cmprssptrs_le)](https://ci.eclipse.org/openj9/job/Build-JDK10-linux_ppc-64_cmprssptrs_le)
     - Description
         - Compiles java10 on linux_ppc-64_cmprssptrs_le
+        - Archives the SDK and test material for use in downstream jobs
+    - Trigger:
+        - This job is used in other pipelines but can be launched manually
+
+- Build-JDK11-linux_ppc-64_cmprssptrs_le_valhalla_nestmates
+    - [![Build Status](https://ci.eclipse.org/openj9/buildStatus/icon?job=Build-JDK11-linux_ppc-64_cmprssptrs_le_valhalla_nestmates)](https://ci.eclipse.org/openj9/job/Build-JDK11-linux_ppc-64_cmprssptrs_le_valhalla_nestmates)
+    - Description
+        - Compiles java11 with nestmates on linux_ppc-64_cmprssptrs_le
         - Archives the SDK and test material for use in downstream jobs
     - Trigger:
         - This job is used in other pipelines but can be launched manually
